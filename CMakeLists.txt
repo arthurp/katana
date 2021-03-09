@@ -40,26 +40,52 @@ endif()
 
 add_subdirectory(tools)
 
-###### Distribution ######
 
-set(CPACK_GENERATOR "TGZ")
-set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYRIGHT")
-set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-set(CPACK_PACKAGE_VERSION_MAJOR ${KATANA_VERSION_MAJOR})
-set(CPACK_PACKAGE_VERSION_MINOR ${KATANA_VERSION_MINOR})
-set(CPACK_PACKAGE_VERSION_PATCH ${KATANA_VERSION_PATCH})
-# The debian version sorts correctly for RPMs too
-set(CPACK_PACKAGE_VERSION ${KATANA_VERSION_DEBIAN})
-include(CPack)
+####### Language Bindings #######
 
 if(KATANA_LANG_BINDINGS_PYTHON)
   add_python_setuptools_target(katana_python
-                               DEPENDS Katana::galois)
+                               DEPENDS Katana::galois
+                               COMPONENT python)
   if(KATANA_IS_MAIN_PROJECT AND BUILD_TESTING)
     add_python_setuptools_tests(katana_python PATH python/tests)
   endif()
   if(BUILD_DOCS)
     add_python_setuptools_docs(katana_python)
   endif()
+endif()
+
+###### Packaging ######
+
+set(CPACK_PACKAGE_NAME "katana")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYRIGHT")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+
+if(NOT BUILD_SHARED_LIBS)
+  set(CPACK_PACKAGE_NAME "${CPACK_PACKAGE_NAME}-static")
+endif()
+
+string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type)
+
+if(build_type STREQUAL "debug")
+  set(CPACK_PACKAGE_NAME "${CPACK_PACKAGE_NAME}-dbg")
+endif()
+
+katana_setup_cpack_components(${CPACK_PACKAGE_NAME})
+
+set(CPACK_PACKAGE_DESCRIPTION "Katana Graph system (Open-source)")
+
+cpack_add_component(dev GROUP dev DEPENDS shlib)
+cpack_add_component(lib GROUP dev)
+
+cpack_add_component(shlib GROUP shlib)
+
+cpack_add_component(tools GROUP tools DEPENDS shlib)
+
+cpack_add_component(apps GROUP apps DEPENDS shlib)
+
+cpack_add_component(python GROUP python DEPENDS shlib)
+
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  include(CPack)
 endif()

@@ -41,6 +41,10 @@ set(CMAKE_INSTALL_PREFIX "/usr" CACHE STRING "install prefix")
 
 set(KATANA_LANG_BINDINGS "" CACHE STRING "Semi-colon separated list of language bindings to build (e.g., 'python'). Default: none")
 
+###### Packaging features ######
+set(KATANA_PACKAGE_TYPE "deb" CACHE STRING "Semi-colon separated list of package types to build with cpack. Supported values: deb rpm tgz.")
+set(KATANA_PACKAGE_DIRECTORY "${PROJECT_BINARY_DIR}/pkg" CACHE STRING "The output path for packages.")
+
 ###### Developer features ######
 set(KATANA_PER_ROUND_STATS OFF CACHE BOOL "Report statistics of each round of execution")
 set(KATANA_NUM_TEST_GPUS "" CACHE STRING "Number of test GPUs to use (on a single machine) for running the tests.")
@@ -410,3 +414,59 @@ function(add_katana_doxygen_target)
     add_dependencies(docs doxygen_docs)
   endif ()
 endfunction()
+
+###### Packaging ######
+
+include(CPackComponent)
+
+set(CPACK_PACKAGE_DIRECTORY "${KATANA_PACKAGE_DIRECTORY}")
+string(TOUPPER "${KATANA_PACKAGE_TYPE}" CPACK_GENERATOR)
+set(CPACK_PACKAGE_VENDOR "Katana Graph")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://katanagraph.com")
+set(CPACK_PACKAGE_VERSION_MAJOR ${KATANA_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${KATANA_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${KATANA_VERSION_PATCH})
+# The debian version sorts correctly for RPMs too
+set(CPACK_PACKAGE_VERSION ${KATANA_VERSION_DEBIAN})
+
+set(CPACK_PACKAGE_CONTACT "support@katanagraph.com")
+
+# Debian package specific options
+set(CPACK_DEBIAN_ENABLE_COMPONENT_DEPENDS TRUE)
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS TRUE)
+set(CPACK_DEB_COMPONENT_INSTALL TRUE)
+
+# Centos package specific options
+set(CPACK_RPM_PACKAGE_AUTOREQPROV FALSE)
+set(CPACK_RPM_COMPONENT_INSTALL TRUE)
+
+# Setup package components and groups
+#set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
+set(CPACK_COMPONENTS_GROUPING ONE_PER_GROUP)
+
+macro(katana_setup_cpack_components NAME)
+  set(CPACK_DEBIAN_DEV_PACKAGE_NAME "lib${NAME}-dev")
+  set(CPACK_RPM_DEV_PACKAGE_NAME "${NAME}-dev")
+  cpack_add_component_group(dev
+                            DESCRIPTION "Katana Graph development libraries and headers")
+
+  set(CPACK_DEBIAN_SHLIB_PACKAGE_NAME "lib${NAME}")
+  set(CPACK_RPM_SHLIB_PACKAGE_NAME "${NAME}")
+  cpack_add_component_group(shlib
+                            DESCRIPTION "Katana Graph runtime libraries")
+
+  set(CPACK_DEBIAN_TOOLS_PACKAGE_NAME "${NAME}-tools")
+  set(CPACK_RPM_TOOLS_PACKAGE_NAME "${NAME}-tools")
+  cpack_add_component_group(tools)
+  set(CPACK_COMPONENT_TOOLS_DESCRIPTION "Katana Graph system management and data processing tools")
+
+  set(CPACK_DEBIAN_APPS_PACKAGE_NAME "${NAME}-apps")
+  set(CPACK_RPM_APPS_PACKAGE_NAME "${NAME}-apps")
+  cpack_add_component_group(apps)
+  set(CPACK_COMPONENT_APPS_DESCRIPTION "Katana Graph applications and CLI algorithms")
+
+  set(CPACK_DEBIAN_PYTHON_PACKAGE_NAME "python-${NAME}")
+  set(CPACK_RPM_PYTHON_PACKAGE_NAME "python-${NAME}")
+  cpack_add_component_group(python)
+  set(CPACK_COMPONENT_PYTHON_DESCRIPTION "Katana Graph Python API")
+endmacro()
