@@ -434,53 +434,84 @@ set(CPACK_PACKAGE_VERSION ${KATANA_VERSION_DEBIAN})
 set(CPACK_PACKAGE_CONTACT "support@katanagraph.com")
 
 # Debian package specific options
+set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 set(CPACK_DEBIAN_ENABLE_COMPONENT_DEPENDS TRUE)
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS TRUE)
-list(APPEND CPACK_DEBIAN_PACKAGE_DEPENDS libnuma1)
 set(CPACK_DEB_COMPONENT_INSTALL TRUE)
 
+#list(APPEND CPACK_DEBIAN_PACKAGE_DEPENDS)
+
 # Centos package specific options
+set(CPACK_RPM_FILE_NAME RPM-DEFAULT)
 set(CPACK_RPM_PACKAGE_AUTOREQPROV FALSE)
-list(APPEND CPACK_RPM_PACKAGE_DEPENDS numactl-libs)
 set(CPACK_RPM_COMPONENT_INSTALL TRUE)
 
-# Setup package components and groups
-#set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
+#list(APPEND CPACK_RPM_PACKAGE_DEPENDS)
+
+# Create a packager for each component group.
 set(CPACK_COMPONENTS_GROUPING ONE_PER_GROUP)
 
-macro(katana_setup_cpack_components NAME)
-  set(CPACK_DEBIAN_DEV_PACKAGE_NAME "lib${NAME}-dev")
+macro(katana_setup_cpack_components NAME SUFFIX)
+  # The groups are named *_pkg to distinguish them from the compenents themselves.
+  set(CPACK_DEBIAN_DEV_PKG_PACKAGE_NAME "lib${NAME}-dev${SUFFIX}")
 #  list(APPEND CPACK_DEBIAN_DEV_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}")
-  set(CPACK_RPM_DEV_PACKAGE_NAME "${NAME}-dev")
+  set(CPACK_RPM_DEV_PKG_PACKAGE_NAME "${NAME}-dev${SUFFIX}")
 #  list(APPEND CPACK_RPM_DEV_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}")
-  cpack_add_component_group(dev
-                            DESCRIPTION "Katana Graph development libraries and headers")
+  cpack_add_component_group(dev_pkg)
+  set(CPACK_COMPONENT_DEV_PKG_DESCRIPTION "Katana Graph development libraries and headers")
+  set(CPACK_COMPONENT_DEV_PKG_DEPENDS shlib_pkg)
 
-  set(CPACK_DEBIAN_SHLIB_PACKAGE_NAME "lib${NAME}")
-  list(APPEND CPACK_DEBIAN_SHLIB_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}")
-  set(CPACK_RPM_SHLIB_PACKAGE_NAME "${NAME}")
-  list(APPEND CPACK_RPM_SHLIB_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}")
-  cpack_add_component_group(shlib
-                            DESCRIPTION "Katana Graph runtime libraries")
+  set(CPACK_DEBIAN_SHLIB_PKG_PACKAGE_NAME "lib${NAME}${SUFFIX}")
+  list(APPEND CPACK_DEBIAN_SHLIB_PKG_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}")
+  set(CPACK_RPM_SHLIB_PKG_PACKAGE_NAME "${NAME}${SUFFIX}")
+  list(APPEND CPACK_RPM_SHLIB_PKG_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}")
+  cpack_add_component_group(shlib_pkg)
+  set(CPACK_COMPONENT_SHLIB_PKG_DESCRIPTION "Katana Graph runtime libraries")
 
-  set(CPACK_DEBIAN_TOOLS_PACKAGE_NAME "${NAME}-tools")
+  set(CPACK_DEBIAN_TOOLS_PKG_PACKAGE_NAME "${NAME}-tools${SUFFIX}")
 #  list(APPEND CPACK_DEBIAN_TOOLS_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}")
-  set(CPACK_RPM_TOOLS_PACKAGE_NAME "${NAME}-tools")
+  set(CPACK_RPM_TOOLS_PKG_PACKAGE_NAME "${NAME}-tools${SUFFIX}")
 #  list(APPEND CPACK_RPM_TOOLS_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}")
-  cpack_add_component_group(tools
-                            DESCRIPTION "Katana Graph system management and data processing tools")
+  cpack_add_component_group(tools_pkg)
+  set(CPACK_COMPONENT_TOOLS_PKG_DESCRIPTION "Katana Graph system management and data processing tools")
+  set(CPACK_COMPONENT_TOOLS_PKG_DEPENDS shlib_pkg)
 
-  set(CPACK_DEBIAN_APPS_PACKAGE_NAME "${NAME}-apps")
+  set(CPACK_DEBIAN_APPS_PKG_PACKAGE_NAME "${NAME}-apps${SUFFIX}")
 #  list(APPEND CPACK_DEBIAN_APPS_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}")
-  set(CPACK_RPM_APPS_PACKAGE_NAME "${NAME}-apps")
+  set(CPACK_RPM_APPS_PKG_PACKAGE_NAME "${NAME}-apps${SUFFIX}")
 #  list(APPEND CPACK_RPM_APPS_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}")
-  cpack_add_component_group(apps
-                            DESCRIPTION "Katana Graph applications and CLI algorithms")
+  cpack_add_component_group(apps_pkg)
+  set(CPACK_COMPONENT_APPS_PKG_DESCRIPTION "Katana Graph applications and CLI algorithms")
+  set(CPACK_COMPONENT_APPS_PKG_DEPENDS shlib_pkg tools_pkg)
 
-  set(CPACK_DEBIAN_PYTHON_PACKAGE_NAME "python3-${NAME}")
-  list(APPEND CPACK_DEBIAN_PYTHON_PACKAGE_DEPENDS "python3-minimal")
-  set(CPACK_RPM_PYTHON_PACKAGE_NAME "python-${NAME}")
+  set(CPACK_DEBIAN_PYTHON_PKG_PACKAGE_NAME "python3-${NAME}${SUFFIX}")
+  list(APPEND CPACK_DEBIAN_PYTHON_PKG_PACKAGE_DEPENDS "python3-minimal")
+  set(CPACK_RPM_PYTHON_PKG_PACKAGE_NAME "python-${NAME}${SUFFIX}")
 #  list(APPEND CPACK_RPM_PYTHON_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}")
-  cpack_add_component_group(python
-                            DESCRIPTION "Katana Graph Python API")
+  cpack_add_component_group(python_pkg)
+  set(CPACK_COMPONENT_PYTHON_PKG_DESCRIPTION "Katana Graph Python API")
+  set(CPACK_COMPONENT_PYTHON_PKG_DEPENDS shlib_pkg)
+endmacro()
+
+#
+macro(katana_reformat_cpack_dependencies)
+  get_cmake_property(_variables VARIABLES)
+  foreach(var IN LISTS _variables)
+    string(REGEX MATCH "CPACK_.*_PACKAGE_DEPENDS" _match "${var}")
+    if (_match)
+      list(JOIN "${var}" ", " _out)
+      message(STATUS "Reformatting ${var}: '${${var}}' => '${_out}'")
+      set("${var}" "${_out}")
+    endif()
+  endforeach()
+endmacro()
+
+macro(katana_dump_cpack_config)
+  get_cmake_property(_variables VARIABLES)
+  foreach(var IN LISTS _variables)
+    string(REGEX MATCH "CPACK_.*" _match "${var}")
+    if (_match)
+      message("set(${var} \"${${var}}\")")
+    endif()
+  endforeach()
 endmacro()

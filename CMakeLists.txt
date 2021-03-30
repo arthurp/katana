@@ -62,30 +62,36 @@ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYRIGHT")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
 if(NOT BUILD_SHARED_LIBS)
-  set(CPACK_PACKAGE_NAME "${CPACK_PACKAGE_NAME}-static")
+  set(PACKAGE_SUFFIX "${PACKAGE_SUFFIX}-static")
 endif()
 
 string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type)
 
 if(build_type STREQUAL "debug")
-  set(CPACK_PACKAGE_NAME "${CPACK_PACKAGE_NAME}-dbg")
+  set(PACKAGE_SUFFIX "${PACKAGE_SUFFIX}-dbg")
 endif()
 
-katana_setup_cpack_components(${CPACK_PACKAGE_NAME})
+katana_setup_cpack_components("${CPACK_PACKAGE_NAME}" "${PACKAGE_SUFFIX}")
 
 set(CPACK_PACKAGE_DESCRIPTION "Katana Graph system (Open-source)")
 
-cpack_add_component(dev GROUP dev DEPENDS shlib)
-cpack_add_component(lib GROUP dev)
+macro(katana_cpack_open_components)
+  cpack_add_component(dev GROUP dev_pkg DEPENDS shlib)
+  cpack_add_component(lib GROUP dev_pkg DEPENDS shlib)
 
-cpack_add_component(shlib GROUP shlib)
+  cpack_add_component(shlib GROUP shlib_pkg)
 
-cpack_add_component(tools GROUP tools DEPENDS shlib)
+  cpack_add_component(tools GROUP tools_pkg DEPENDS shlib)
 
-cpack_add_component(apps GROUP apps DEPENDS shlib)
+  cpack_add_component(apps GROUP apps_pkg DEPENDS shlib)
 
-cpack_add_component(python GROUP python DEPENDS shlib)
+  cpack_add_component(python GROUP python_pkg DEPENDS shlib)
+endmacro()
+
+# Use a macro here so it can be called in the enterprise build to setup components there (they are directory local)
+katana_cpack_open_components()
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  katana_reformat_cpack_dependencies()
   include(CPack)
 endif()
