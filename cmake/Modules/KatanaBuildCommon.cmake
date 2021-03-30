@@ -44,6 +44,8 @@ set(KATANA_LANG_BINDINGS "" CACHE STRING "Semi-colon separated list of language 
 ###### Packaging features ######
 set(KATANA_PACKAGE_TYPE "deb" CACHE STRING "Semi-colon separated list of package types to build with cpack. Supported values: deb rpm tgz.")
 set(KATANA_PACKAGE_DIRECTORY "${PROJECT_BINARY_DIR}/pkg" CACHE STRING "The output path for packages.")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "" CACHE STRING "Semi-colon separated list of Debian package dependencies")
+set(CPACK_RPM_PACKAGE_DEPENDS "" CACHE STRING "Semi-colon separated list of RPM package dependencies")
 
 ###### Developer features ######
 set(KATANA_PER_ROUND_STATS OFF CACHE BOOL "Report statistics of each round of execution")
@@ -434,10 +436,12 @@ set(CPACK_PACKAGE_CONTACT "support@katanagraph.com")
 # Debian package specific options
 set(CPACK_DEBIAN_ENABLE_COMPONENT_DEPENDS TRUE)
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS TRUE)
+list(APPEND CPACK_DEBIAN_PACKAGE_DEPENDS libnuma1)
 set(CPACK_DEB_COMPONENT_INSTALL TRUE)
 
 # Centos package specific options
 set(CPACK_RPM_PACKAGE_AUTOREQPROV FALSE)
+list(APPEND CPACK_RPM_PACKAGE_DEPENDS numactl-libs)
 set(CPACK_RPM_COMPONENT_INSTALL TRUE)
 
 # Setup package components and groups
@@ -446,27 +450,37 @@ set(CPACK_COMPONENTS_GROUPING ONE_PER_GROUP)
 
 macro(katana_setup_cpack_components NAME)
   set(CPACK_DEBIAN_DEV_PACKAGE_NAME "lib${NAME}-dev")
+#  list(APPEND CPACK_DEBIAN_DEV_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}")
   set(CPACK_RPM_DEV_PACKAGE_NAME "${NAME}-dev")
+#  list(APPEND CPACK_RPM_DEV_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}")
   cpack_add_component_group(dev
                             DESCRIPTION "Katana Graph development libraries and headers")
 
   set(CPACK_DEBIAN_SHLIB_PACKAGE_NAME "lib${NAME}")
+  list(APPEND CPACK_DEBIAN_SHLIB_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}")
   set(CPACK_RPM_SHLIB_PACKAGE_NAME "${NAME}")
+  list(APPEND CPACK_RPM_SHLIB_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}")
   cpack_add_component_group(shlib
                             DESCRIPTION "Katana Graph runtime libraries")
 
   set(CPACK_DEBIAN_TOOLS_PACKAGE_NAME "${NAME}-tools")
+#  list(APPEND CPACK_DEBIAN_TOOLS_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}")
   set(CPACK_RPM_TOOLS_PACKAGE_NAME "${NAME}-tools")
-  cpack_add_component_group(tools)
-  set(CPACK_COMPONENT_TOOLS_DESCRIPTION "Katana Graph system management and data processing tools")
+#  list(APPEND CPACK_RPM_TOOLS_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}")
+  cpack_add_component_group(tools
+                            DESCRIPTION "Katana Graph system management and data processing tools")
 
   set(CPACK_DEBIAN_APPS_PACKAGE_NAME "${NAME}-apps")
+#  list(APPEND CPACK_DEBIAN_APPS_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}")
   set(CPACK_RPM_APPS_PACKAGE_NAME "${NAME}-apps")
-  cpack_add_component_group(apps)
-  set(CPACK_COMPONENT_APPS_DESCRIPTION "Katana Graph applications and CLI algorithms")
+#  list(APPEND CPACK_RPM_APPS_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}")
+  cpack_add_component_group(apps
+                            DESCRIPTION "Katana Graph applications and CLI algorithms")
 
-  set(CPACK_DEBIAN_PYTHON_PACKAGE_NAME "python-${NAME}")
+  set(CPACK_DEBIAN_PYTHON_PACKAGE_NAME "python3-${NAME}")
+  list(APPEND CPACK_DEBIAN_PYTHON_PACKAGE_DEPENDS "python3-minimal")
   set(CPACK_RPM_PYTHON_PACKAGE_NAME "python-${NAME}")
-  cpack_add_component_group(python)
-  set(CPACK_COMPONENT_PYTHON_DESCRIPTION "Katana Graph Python API")
+#  list(APPEND CPACK_RPM_PYTHON_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}")
+  cpack_add_component_group(python
+                            DESCRIPTION "Katana Graph Python API")
 endmacro()
