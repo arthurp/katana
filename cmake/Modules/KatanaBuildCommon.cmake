@@ -448,10 +448,12 @@ set(CPACK_RPM_COMPONENT_INSTALL TRUE)
 
 list(APPEND CPACK_RPM_PACKAGE_DEPENDS libatomic numactl-libs ncurses-libs)
 
-# Create a packager for each component group.
+# Create a package for each component group.
 set(CPACK_COMPONENTS_GROUPING ONE_PER_GROUP)
 
-macro(katana_setup_cpack_components NAME SUFFIX)
+# Setup the cpack component groups: dev_pkg, shlib_pkg, tools_pkg, apps_pkg.
+# After calling this, call cpack_add_component to add components to the groups.
+macro(katana_setup_cpack_component_groups NAME SUFFIX)
   # The groups are named *_pkg to distinguish them from the compenents themselves.
   set(CPACK_DEBIAN_DEV_PKG_PACKAGE_NAME "lib${NAME}-dev${SUFFIX}")
 #  list(APPEND CPACK_DEBIAN_DEV_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}")
@@ -493,19 +495,19 @@ macro(katana_setup_cpack_components NAME SUFFIX)
   set(CPACK_COMPONENT_PYTHON_PKG_DEPENDS shlib_pkg)
 endmacro()
 
-#
+# Convert all `CPACK_.*_PACKAGE_DEPENDS` variables from cmake lists (;-separated) to valid dependency lists (,-separated).
 macro(katana_reformat_cpack_dependencies)
   get_cmake_property(_variables VARIABLES)
   foreach(var IN LISTS _variables)
     string(REGEX MATCH "CPACK_.*_PACKAGE_DEPENDS" _match "${var}")
     if (_match)
       list(JOIN "${var}" ", " _out)
-      message(STATUS "Reformatting ${var}: '${${var}}' => '${_out}'")
       set("${var}" "${_out}")
     endif()
   endforeach()
 endmacro()
 
+# Dump all cpack variables. Useful for debugging.
 macro(katana_dump_cpack_config)
   get_cmake_property(_variables VARIABLES)
   foreach(var IN LISTS _variables)

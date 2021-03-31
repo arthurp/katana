@@ -71,7 +71,7 @@ if(build_type STREQUAL "debug")
   set(PACKAGE_SUFFIX "${PACKAGE_SUFFIX}-dbg")
 endif()
 
-katana_setup_cpack_components("${CPACK_PACKAGE_NAME}" "${PACKAGE_SUFFIX}")
+katana_setup_cpack_component_groups("${CPACK_PACKAGE_NAME}" "${PACKAGE_SUFFIX}")
 
 set(CPACK_PACKAGE_DESCRIPTION "Katana Graph system (Open-source)")
 
