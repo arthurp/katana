@@ -39,6 +39,8 @@ set(BUILD_TESTING ON CACHE BOOL "Build tests")
 # "/usr/local/lib" is not a default search location for ld.so
 set(CMAKE_INSTALL_PREFIX "/usr" CACHE STRING "install prefix")
 
+set(KATANA_INTERNAL_DOCS "NO" CACHE BOOL "If YES, generate documentation that includes internal details. Otherwise, generate documentation more suitable for library users.")
+
 set(KATANA_LANG_BINDINGS "" CACHE STRING "Semi-colon separated list of language bindings to build (e.g., 'python'). Default: none")
 
 ###### Developer features ######
