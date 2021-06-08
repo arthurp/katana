@@ -1,0 +1,4 @@
+var structkatana_1_1function__traits_3_01T_00_01typename_01std_1_1enable__if__t_3_01has__function__traits__v_3_01T_01_4_01_4_01_4 =
+[
+    [ "type", "structkatana_1_1function__traits_3_01T_00_01typename_01std_1_1enable__if__t_3_01has__function__traits__v_3_01T_01_4_01_4_01_4.html#ae174f2b857f8d80f2b73226862148fdd", null ]
+];

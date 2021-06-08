@@ -1,0 +1,238 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>katana.numba_support.numpy_atomic &#8212; Katana Python 0.1.12.dev0+152.0.f0e084.unmerged documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for katana.numba_support.numpy_atomic</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">types</span>
+<span class="kn">from</span> <span class="nn">numba.core</span> <span class="kn">import</span> <span class="n">cgutils</span>
+<span class="kn">from</span> <span class="nn">numba.core.typing.arraydecl</span> <span class="kn">import</span> <span class="n">get_array_index_type</span>
+<span class="kn">from</span> <span class="nn">numba.extending</span> <span class="kn">import</span> <span class="n">lower_builtin</span><span class="p">,</span> <span class="n">type_callable</span>
+<span class="kn">from</span> <span class="nn">numba.np.arrayobj</span> <span class="kn">import</span> <span class="n">basic_indexing</span><span class="p">,</span> <span class="n">make_array</span><span class="p">,</span> <span class="n">normalize_indices</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;atomic_add&quot;</span><span class="p">,</span> <span class="s2">&quot;atomic_sub&quot;</span><span class="p">,</span> <span class="s2">&quot;atomic_max&quot;</span><span class="p">,</span> <span class="s2">&quot;atomic_min&quot;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">atomic_rmw</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">builder</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">arrayty</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">ptr</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">arrayty</span><span class="o">.</span><span class="n">aligned</span>  <span class="c1"># We probably have to have aligned arrays.</span>
+    <span class="n">dataval</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get_value_as_data</span><span class="p">(</span><span class="n">builder</span><span class="p">,</span> <span class="n">arrayty</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">builder</span><span class="o">.</span><span class="n">atomic_rmw</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">ptr</span><span class="p">,</span> <span class="n">dataval</span><span class="p">,</span> <span class="s2">&quot;monotonic&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">declare_atomic_array_op</span><span class="p">(</span><span class="n">iop</span><span class="p">,</span> <span class="n">uop</span><span class="p">,</span> <span class="n">fop</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="nd">@type_callable</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">func_type</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">typer</span><span class="p">(</span><span class="n">ary</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="n">get_array_index_type</span><span class="p">(</span><span class="n">ary</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">res</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">result</span>
+                    <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">can_convert</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">res</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="n">res</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="k">return</span> <span class="n">typer</span>
+
+        <span class="n">_</span> <span class="o">=</span> <span class="n">func_type</span>
+
+        <span class="nd">@lower_builtin</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">Buffer</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">Any</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">func_impl</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">builder</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            array[a] = scalar_or_array</span>
+<span class="sd">            array[a,..,b] = scalar_or_array</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">aryty</span><span class="p">,</span> <span class="n">idxty</span><span class="p">,</span> <span class="n">valty</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">args</span>
+            <span class="n">ary</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">args</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idxty</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">BaseTuple</span><span class="p">):</span>
+                <span class="n">index_types</span> <span class="o">=</span> <span class="n">idxty</span><span class="o">.</span><span class="n">types</span>
+                <span class="n">indices</span> <span class="o">=</span> <span class="n">cgutils</span><span class="o">.</span><span class="n">unpack_tuple</span><span class="p">(</span><span class="n">builder</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">idxty</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">index_types</span> <span class="o">=</span> <span class="p">(</span><span class="n">idxty</span><span class="p">,)</span>
+                <span class="n">indices</span> <span class="o">=</span> <span class="p">(</span><span class="n">idx</span><span class="p">,)</span>
+
+            <span class="n">ary</span> <span class="o">=</span> <span class="n">make_array</span><span class="p">(</span><span class="n">aryty</span><span class="p">)(</span><span class="n">context</span><span class="p">,</span> <span class="n">builder</span><span class="p">,</span> <span class="n">ary</span><span class="p">)</span>
+
+            <span class="c1"># First try basic indexing to see if a single array location is denoted.</span>
+            <span class="n">index_types</span><span class="p">,</span> <span class="n">indices</span> <span class="o">=</span> <span class="n">normalize_indices</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">builder</span><span class="p">,</span> <span class="n">index_types</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span>
+            <span class="n">dataptr</span><span class="p">,</span> <span class="n">shapes</span><span class="p">,</span> <span class="n">_strides</span> <span class="o">=</span> <span class="n">basic_indexing</span><span class="p">(</span>
+                <span class="n">context</span><span class="p">,</span> <span class="n">builder</span><span class="p">,</span> <span class="n">aryty</span><span class="p">,</span> <span class="n">ary</span><span class="p">,</span> <span class="n">index_types</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">boundscheck</span><span class="o">=</span><span class="n">context</span><span class="o">.</span><span class="n">enable_boundscheck</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">shapes</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Complex shapes are not supported&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Store source value the given location</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">builder</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">valty</span><span class="p">,</span> <span class="n">aryty</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="n">op</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aryty</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">Integer</span><span class="p">)</span> <span class="ow">and</span> <span class="n">aryty</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">signed</span><span class="p">:</span>
+                <span class="n">op</span> <span class="o">=</span> <span class="n">iop</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aryty</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">Integer</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">aryty</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">signed</span><span class="p">:</span>
+                <span class="n">op</span> <span class="o">=</span> <span class="n">uop</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aryty</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">Float</span><span class="p">):</span>
+                <span class="n">op</span> <span class="o">=</span> <span class="n">fop</span>
+            <span class="k">if</span> <span class="n">op</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Atomic operation not supported on &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">aryty</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">atomic_rmw</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">builder</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">aryty</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">dataptr</span><span class="p">)</span>
+
+        <span class="n">_</span> <span class="o">=</span> <span class="n">func_impl</span>
+
+        <span class="k">return</span> <span class="n">func</span>
+
+    <span class="k">return</span> <span class="n">decorator</span>
+
+
+<div class="viewcode-block" id="atomic_add"><a class="viewcode-back" href="../../../katana.atomic.html#katana.atomic.atomic_add">[docs]</a><span class="nd">@declare_atomic_array_op</span><span class="p">(</span><span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="s2">&quot;fadd&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">atomic_add</span><span class="p">(</span><span class="n">ary</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Atomically, perform `ary[i] += v` and return the previous value of `ary[i]`.</span>
+
+<span class="sd">    i must be a simple index for a single element of ary. Broadcasting and vector operations are not supported.</span>
+
+<span class="sd">    This should be used from numba compiled code.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">orig</span> <span class="o">=</span> <span class="n">ary</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">ary</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">v</span>
+    <span class="k">return</span> <span class="n">orig</span></div>
+
+
+<div class="viewcode-block" id="atomic_sub"><a class="viewcode-back" href="../../../katana.atomic.html#katana.atomic.atomic_sub">[docs]</a><span class="nd">@declare_atomic_array_op</span><span class="p">(</span><span class="s2">&quot;sub&quot;</span><span class="p">,</span> <span class="s2">&quot;sub&quot;</span><span class="p">,</span> <span class="s2">&quot;fsub&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">atomic_sub</span><span class="p">(</span><span class="n">ary</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Atomically, perform `ary[i] -= v` and return the previous value of `ary[i]`.</span>
+
+<span class="sd">    i must be a simple index for a single element of ary. Broadcasting and vector operations are not supported.</span>
+
+<span class="sd">    This should be used from numba compiled code.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">orig</span> <span class="o">=</span> <span class="n">ary</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">ary</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="n">v</span>
+    <span class="k">return</span> <span class="n">orig</span></div>
+
+
+<div class="viewcode-block" id="atomic_max"><a class="viewcode-back" href="../../../katana.atomic.html#katana.atomic.atomic_max">[docs]</a><span class="nd">@declare_atomic_array_op</span><span class="p">(</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;umax&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">atomic_max</span><span class="p">(</span><span class="n">ary</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Atomically, perform `ary[i] = max(ary[i], v)` and return the previous value of `ary[i]`.</span>
+<span class="sd">    This operation does not support floating-point values.</span>
+
+<span class="sd">    i must be a simple index for a single element of ary. Broadcasting and vector operations are not supported.</span>
+
+<span class="sd">    This should be used from numba compiled code.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">orig</span> <span class="o">=</span> <span class="n">ary</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">ary</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ary</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">v</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">orig</span></div>
+
+
+<div class="viewcode-block" id="atomic_min"><a class="viewcode-back" href="../../../katana.atomic.html#katana.atomic.atomic_min">[docs]</a><span class="nd">@declare_atomic_array_op</span><span class="p">(</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;umin&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">atomic_min</span><span class="p">(</span><span class="n">ary</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Atomically, perform `ary[i] = min(ary[i], v)` and return the previous value of `ary[i]`.</span>
+<span class="sd">    This operation does not support floating-point values.</span>
+
+<span class="sd">    i must be a simple index for a single element of ary. Broadcasting and vector operations are not supported.</span>
+
+<span class="sd">    This should be used from numba compiled code.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">orig</span> <span class="o">=</span> <span class="n">ary</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">ary</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ary</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">v</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">orig</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Katana Python</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../katana.analytics.html">Analytics Algorithms (katana.analytics)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../katana.atomic.html">Atomic Operations (katana.atomic)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../katana.datastructures.html">Data Structures (katana.datastructures)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../katana.loops.html">Parallel Loops (katana.loops)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../katana.property_graph.html">Property Graphs (katana.property_graph)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../katana.timer.html">Performance Timers (katana.timer)</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

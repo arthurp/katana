@@ -1,0 +1,28 @@
+var Properties_8h =
+[
+    [ "PropertyTraits", "structkatana_1_1PropertyTraits.html", "structkatana_1_1PropertyTraits" ],
+    [ "PODPropertyView", "classkatana_1_1PODPropertyView.html", "classkatana_1_1PODPropertyView" ],
+    [ "BooleanPropertyReadOnlyView", "classkatana_1_1BooleanPropertyReadOnlyView.html", "classkatana_1_1BooleanPropertyReadOnlyView" ],
+    [ "StringPropertyReadOnlyView", "classkatana_1_1StringPropertyReadOnlyView.html", "classkatana_1_1StringPropertyReadOnlyView" ],
+    [ "PODProperty", "structkatana_1_1PODProperty.html", "structkatana_1_1PODProperty" ],
+    [ "UInt8Property", "structkatana_1_1UInt8Property.html", null ],
+    [ "UInt16Property", "structkatana_1_1UInt16Property.html", null ],
+    [ "UInt32Property", "structkatana_1_1UInt32Property.html", null ],
+    [ "UInt64Property", "structkatana_1_1UInt64Property.html", null ],
+    [ "BooleanReadOnlyProperty", "structkatana_1_1BooleanReadOnlyProperty.html", "structkatana_1_1BooleanReadOnlyProperty" ],
+    [ "StringReadOnlyProperty", "structkatana_1_1StringReadOnlyProperty.html", "structkatana_1_1StringReadOnlyProperty" ],
+    [ "LargeStringReadOnlyProperty", "structkatana_1_1LargeStringReadOnlyProperty.html", "structkatana_1_1LargeStringReadOnlyProperty" ],
+    [ "PropertyArrowArrayType", "Properties_8h.html#a82c45912870ebf83f7455304855c5aeb", null ],
+    [ "PropertyArrowTuple", "Properties_8h.html#afbfdff467f47dfe8a2ab1cc597d7584f", null ],
+    [ "PropertyArrowType", "Properties_8h.html#ae96891e61fe2d373acae3b4a9a206791", null ],
+    [ "PropertyConstReferenceType", "Properties_8h.html#aaa1bee45602998c333b50fc73a6d5498", null ],
+    [ "PropertyReferenceType", "Properties_8h.html#a53ce8aaa410efd9dbfd1eb814700c2ca", null ],
+    [ "PropertyViewTuple", "Properties_8h.html#aa4ca3836521e1363b4681229b26bacb7", null ],
+    [ "PropertyViewType", "Properties_8h.html#aaf4b21fee4699f8130e3178ba8f67bf7", null ],
+    [ "TupleElements", "Properties_8h.html#ada32e492c7349b1893be8f4849e76852", null ],
+    [ "AllocateTable", "Properties_8h.html#ab90a91526675c58912fc6775b5263a15", null ],
+    [ "ConstructPropertyView", "Properties_8h.html#a13d3d3094b541b09751e28b4f60ca2ca", null ],
+    [ "ConstructPropertyViews", "Properties_8h.html#a6066d13104ba2b718938aefa9760a334", null ],
+    [ "ConstructPropertyViews", "Properties_8h.html#afc5723542ab0fdcf05904dca7ece0804", null ],
+    [ "ConstructPropertyViews", "Properties_8h.html#aa52d589eb252be44211be38ce54309ec", null ]
+];

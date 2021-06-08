@@ -1,0 +1,222 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Performance Timers (katana.timer) &#8212; Katana Python 0.1.12.dev0+152.0.f0e084.unmerged documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Property Graphs (katana.property_graph)" href="katana.property_graph.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-katana.timer">
+<span id="performance-timers-katana-timer"></span><h1>Performance Timers (katana.timer)<a class="headerlink" href="#module-katana.timer" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.timer.StatTimer">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.timer.</span></span><span class="sig-name descname"><span class="pre">StatTimer</span></span><a class="headerlink" href="#katana.timer.StatTimer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A high-resolution performance timer which is reported to Galois’ performance counter registry.</p>
+<p>The timer may be stopped and started with the <cite>start()</cite> and <cite>stop()</cite> methods or by using the timer as a context manager:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">timer</span> <span class="o">=</span> <span class="n">StatTimer</span><span class="p">(</span><span class="s2">&quot;Test&quot;</span><span class="p">,</span> <span class="s2">&quot;Inner&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">with</span> <span class="n">timer</span><span class="p">:</span> <span class="o">...</span>
+</pre></div>
+</div>
+<p>The time is only reported to Galois when this object is destoyed so the user should make sure this object goes out
+of scope before the program exits or that they call call <cite>finalize()</cite>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.timer.StatTimer.__enter__">
+<span class="sig-name descname"><span class="pre">__enter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#katana.timer.StatTimer.__enter__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.timer.StatTimer.__exit__">
+<span class="sig-name descname"><span class="pre">__exit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exc_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_tb</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.timer.StatTimer.__exit__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.timer.StatTimer.finalize">
+<span class="sig-name descname"><span class="pre">finalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.timer.StatTimer.finalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report the timer to the Galois performance registry and destroy the timer.
+After this is called this object cannot be used any more.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.timer.StatTimer.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.timer.StatTimer.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the accumulated time in milliseconds (as a float).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.timer.StatTimer.get_sec">
+<span class="sig-name descname"><span class="pre">get_sec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.timer.StatTimer.get_sec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the accumulated time in seconds (as a float).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.timer.StatTimer.get_usec">
+<span class="sig-name descname"><span class="pre">get_usec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.timer.StatTimer.get_usec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the accumulated time in microseconds (as an int).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.timer.StatTimer.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.timer.StatTimer.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the timer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.timer.StatTimer.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.timer.StatTimer.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the timer.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.timer.Timer">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.timer.</span></span><span class="sig-name descname"><span class="pre">Timer</span></span><a class="headerlink" href="#katana.timer.Timer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A simple high-resolution performance timer.</p>
+<p>The timer may be stopped and started with the <cite>start()</cite> and <cite>stop()</cite> methods or by using the timer as a context manager:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">()</span>
+<span class="gp">... </span><span class="k">with</span> <span class="n">timer</span><span class="p">:</span> <span class="o">...</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.timer.Timer.__enter__">
+<span class="sig-name descname"><span class="pre">__enter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#katana.timer.Timer.__enter__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.timer.Timer.__exit__">
+<span class="sig-name descname"><span class="pre">__exit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exc_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_tb</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.timer.Timer.__exit__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.timer.Timer.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.timer.Timer.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the accumulated time in milliseconds (as a float).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.timer.Timer.get_sec">
+<span class="sig-name descname"><span class="pre">get_sec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.timer.Timer.get_sec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the accumulated time in seconds (as a float).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.timer.Timer.get_usec">
+<span class="sig-name descname"><span class="pre">get_usec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.timer.Timer.get_usec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the accumulated time in microseconds (as an int).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.timer.Timer.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.timer.Timer.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the timer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.timer.Timer.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.timer.Timer.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the timer.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Katana Python</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="katana.analytics.html">Analytics Algorithms (katana.analytics)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.atomic.html">Atomic Operations (katana.atomic)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.datastructures.html">Data Structures (katana.datastructures)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.loops.html">Parallel Loops (katana.loops)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.property_graph.html">Property Graphs (katana.property_graph)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Performance Timers (katana.timer)</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="katana.property_graph.html" title="previous chapter">Property Graphs (katana.property_graph)</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/katana.timer.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

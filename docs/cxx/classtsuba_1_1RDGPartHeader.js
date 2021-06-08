@@ -1,0 +1,26 @@
+var classtsuba_1_1RDGPartHeader =
+[
+    [ "AddEdgePropStorageInfo", "classtsuba_1_1RDGPartHeader.html#addc088c3130f29f0504d470d9d9ba8b2", null ],
+    [ "AddNodePropStorageInfo", "classtsuba_1_1RDGPartHeader.html#a38929fd96683e0193ab5b3b526c6701f", null ],
+    [ "edge_prop_info_list", "classtsuba_1_1RDGPartHeader.html#a1fa1a2467bc5bea49922a11cf4c5b393", null ],
+    [ "MarkAllPropertiesPersistent", "classtsuba_1_1RDGPartHeader.html#a6a7bea3dace751492dcd2fb46b02297f", null ],
+    [ "MarkEdgePropertiesPersistent", "classtsuba_1_1RDGPartHeader.html#a64833f0943d35bdc070281b62c9dc1c5", null ],
+    [ "MarkNodePropertiesPersistent", "classtsuba_1_1RDGPartHeader.html#a272e1a628f235aef08cd2bdfe658c667", null ],
+    [ "metadata", "classtsuba_1_1RDGPartHeader.html#a9405674299968a8803e249159d503ed0", null ],
+    [ "node_prop_info_list", "classtsuba_1_1RDGPartHeader.html#a4b4d3e71129cf4a7fcfa965986d321b4", null ],
+    [ "part_prop_info_list", "classtsuba_1_1RDGPartHeader.html#a5e6e5128d8f4c2e4d4a49a3f684f4066", null ],
+    [ "PrunePropsTo", "classtsuba_1_1RDGPartHeader.html#ab9a41568ff446f9471098f5a9a5f1425", null ],
+    [ "RemoveEdgeProperty", "classtsuba_1_1RDGPartHeader.html#a98c0edf0d29dc45e1116b43108a673d9", null ],
+    [ "RemoveNodeProperty", "classtsuba_1_1RDGPartHeader.html#af0ab19d1dba3a5774a047182d9913b13", null ],
+    [ "set_edge_prop_info_list", "classtsuba_1_1RDGPartHeader.html#a50574ad2dedfe8c2dbdad2fa98506a67", null ],
+    [ "set_metadata", "classtsuba_1_1RDGPartHeader.html#aac6f72c7fc71e36817e2d92172061cee", null ],
+    [ "set_node_prop_info_list", "classtsuba_1_1RDGPartHeader.html#ac08198c60666679b0fce7645c4399728", null ],
+    [ "set_part_properties", "classtsuba_1_1RDGPartHeader.html#a2f1f882a55d9f34e08bc855ba8214d0a", null ],
+    [ "set_topology_path", "classtsuba_1_1RDGPartHeader.html#aac456bf3d0f943f23e0626ffed8fec02", null ],
+    [ "topology_path", "classtsuba_1_1RDGPartHeader.html#ae8fa95c6f9c77fee4e394ba727815383", null ],
+    [ "UnbindFromStorage", "classtsuba_1_1RDGPartHeader.html#a7ce04c40bddf0237f4443cddf0161505", null ],
+    [ "Validate", "classtsuba_1_1RDGPartHeader.html#a9e67399b204aec23842846f2bfa2a032", null ],
+    [ "Write", "classtsuba_1_1RDGPartHeader.html#a0b94593f1908a69e795f6ad86b92ef53", null ],
+    [ "from_json", "classtsuba_1_1RDGPartHeader.html#af6d5c8abd03be3ab05d53470a5299dc5", null ],
+    [ "to_json", "classtsuba_1_1RDGPartHeader.html#a67d967fdcbf764de05f7948ab7d269be", null ]
+];

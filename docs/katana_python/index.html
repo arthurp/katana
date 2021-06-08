@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Galois Parallel Programming System &#8212; Katana Python 0.1.12.dev0+152.0.f0e084.unmerged documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Analytics Algorithms (katana.analytics)" href="katana.analytics.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-katana">
+<span id="galois-parallel-programming-system"></span><h1>Galois Parallel Programming System<a class="headerlink" href="#module-katana" title="Permalink to this headline">¶</a></h1>
+<p>Galois Python is a Python library designed to simplify parallel programming. It is especially
+focused on computations that are difficult to parallelize efficiently, such as
+loops with</p>
+<ul class="simple">
+<li><p>irregular amount of work per iteration</p></li>
+<li><p>irregular memory accesses and branching patterns</p></li>
+<li><p>dependencies between iterations</p></li>
+<li><p>dynamic work creation</p></li>
+</ul>
+<p>A typical Galois user is a Python programmer who understands parallelism in his/her
+algorithm and wishes to express it using high-level constructs such as parallel
+loops and concurrent data structures, without having to deal with low-level
+parallel programming details such as threads, mutexes, barriers, condition
+variables, work stealing, etc.</p>
+<p>Galois Python utilizes the underlying Galois C++ library for most operations.
+Galois Python also leverages numba to compile the “operators” which are run
+by Galois C++.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Version</dt>
+<dd class="field-odd"><p>0.1.12.dev0+152.0.f0e084.unmerged</p>
+</dd>
+</dl>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="katana.analytics.html">Analytics Algorithms (katana.analytics)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="katana.analytics.html#plans">Plans</a></li>
+<li class="toctree-l2"><a class="reference internal" href="katana.analytics.html#statistics">Statistics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="katana.analytics.html#module-katana.analytics._betweenness_centrality">Algorithms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="katana.analytics.html#betweenness-centrality">Betweenness Centrality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="katana.analytics.html#breadth-first-search">Breadth-first Search</a></li>
+<li class="toctree-l3"><a class="reference internal" href="katana.analytics.html#connected-components">Connected Components</a></li>
+<li class="toctree-l3"><a class="reference internal" href="katana.analytics.html#independent-set">Independent Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="katana.analytics.html#louvain-clustering">Louvain Clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="katana.analytics.html#local-clustering-coefficient">Local Clustering Coefficient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="katana.analytics.html#subgraph-extraction">Subgraph Extraction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="katana.analytics.html#jaccard-similarity">Jaccard Similarity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="katana.analytics.html#k-core">k-Core</a></li>
+<li class="toctree-l3"><a class="reference internal" href="katana.analytics.html#k-truss">k-Truss</a></li>
+<li class="toctree-l3"><a class="reference internal" href="katana.analytics.html#page-rank">Page Rank</a></li>
+<li class="toctree-l3"><a class="reference internal" href="katana.analytics.html#single-source-shortest-path">Single-Source Shortest Path</a></li>
+<li class="toctree-l3"><a class="reference internal" href="katana.analytics.html#triangle-counting">Triangle Counting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="katana.analytics.html#trivial-algorithms">Trivial Algorithms</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="katana.atomic.html">Atomic Operations (katana.atomic)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.datastructures.html">Data Structures (katana.datastructures)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.loops.html">Parallel Loops (katana.loops)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.property_graph.html">Property Graphs (katana.property_graph)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.timer.html">Performance Timers (katana.timer)</a></li>
+</ul>
+</div>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">Katana Python</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="katana.analytics.html">Analytics Algorithms (katana.analytics)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.atomic.html">Atomic Operations (katana.atomic)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.datastructures.html">Data Structures (katana.datastructures)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.loops.html">Parallel Loops (katana.loops)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.property_graph.html">Property Graphs (katana.property_graph)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.timer.html">Performance Timers (katana.timer)</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="katana.analytics.html" title="next chapter">Analytics Algorithms (katana.analytics)</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

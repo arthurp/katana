@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Property Graphs (katana.property_graph) &#8212; Katana Python 0.1.12.dev0+152.0.f0e084.unmerged documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Performance Timers (katana.timer)" href="katana.timer.html" />
+    <link rel="prev" title="Parallel Loops (katana.loops)" href="katana.loops.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-katana.property_graph">
+<span id="property-graphs-katana-property-graph"></span><h1>Property Graphs (katana.property_graph)<a class="headerlink" href="#module-katana.property_graph" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.property_graph.PropertyGraph">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.property_graph.</span></span><span class="sig-name descname"><span class="pre">PropertyGraph</span></span><a class="headerlink" href="#katana.property_graph.PropertyGraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>A property graph loaded into memory.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.property_graph.PropertyGraph.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_properties</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_properties</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_id_to_load</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.property_graph.PropertyGraph.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a property graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – the path or URL from which to load the graph. This support local paths or s3 URLs.</p></li>
+<li><p><strong>partition_id_to_load</strong> – The partition number in the graph to load. If this is None (default), then the
+partition corresponding to this host’s network id will be loaded.</p></li>
+<li><p><strong>node_properties</strong> – A list of node property names to load into memory. If this is None (default), then all
+properties are loaded.</p></li>
+<li><p><strong>edge_properties</strong> – A list of edge property names to load into memory. If this is None (default), then all
+properties are loaded.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.property_graph.PropertyGraph.from_graphml">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">from_graphml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.property_graph.PropertyGraph.from_graphml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a GraphML file into katana form</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em><em> or </em><em>Path</em>) – Path to source GraphML file.</p></li>
+<li><p><strong>chunk_size</strong> (<em>int</em>) – Chunk size for in memory representations during conversion. Generally this term can be
+ignored, but it can be decreased to reduce memory usage when converting large inputs.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the new <a class="reference internal" href="#katana.property_graph.PropertyGraph" title="katana.property_graph.PropertyGraph"><code class="xref py py-class docutils literal notranslate"><span class="pre">PropertyGraph</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Katana Python</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="katana.analytics.html">Analytics Algorithms (katana.analytics)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.atomic.html">Atomic Operations (katana.atomic)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.datastructures.html">Data Structures (katana.datastructures)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.loops.html">Parallel Loops (katana.loops)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Property Graphs (katana.property_graph)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.timer.html">Performance Timers (katana.timer)</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="katana.loops.html" title="previous chapter">Parallel Loops (katana.loops)</a></li>
+      <li>Next: <a href="katana.timer.html" title="next chapter">Performance Timers (katana.timer)</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/katana.property_graph.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

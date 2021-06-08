@@ -1,0 +1,1880 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Analytics Algorithms (katana.analytics) &#8212; Katana Python 0.1.12.dev0+152.0.f0e084.unmerged documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Atomic Operations (katana.atomic)" href="katana.atomic.html" />
+    <link rel="prev" title="Galois Parallel Programming System" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-katana.analytics">
+<span id="analytics-algorithms-katana-analytics"></span><h1>Analytics Algorithms (katana.analytics)<a class="headerlink" href="#module-katana.analytics" title="Permalink to this headline">¶</a></h1>
+<p>Analytics algorithms for Katana graphs</p>
+<p>Each abstract algorithm has a <a class="reference internal" href="#plan"><span class="std std-ref">Plans</span></a> class, the routine itself, and optionally, a results
+checker function and a <a class="reference internal" href="#statistics"><span class="std std-ref">Statistics</span></a> class.</p>
+<section id="plans">
+<span id="plan"></span><h2>Plans<a class="headerlink" href="#plans" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.Plan">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">Plan</span></span><a class="headerlink" href="#katana.analytics.Plan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Each abstract algorithm has an execution <cite>Plan</cite> subclass.</p>
+<p>Execution plans contain any tuning parameters the abstract algorithm requires. In general, this will include
+selecting the concrete algorithm to use and providing its tuning parameters (e.g., tile size). Plans do not affect
+the result (beyond potentially returning a different valid result in the case of non-deterministic algorithms or
+floating-point operations).</p>
+<p>All plans provide static methods to create a plan each concrete algorithm and constructors for any automatic
+heuristics. The automatic constructors may either take no input and make decisions at run time, use fixed default
+parameters, or take a graph to be analyzed to determine appropriate parameters. A plan created automatically for one
+graph can still be used with other graphs, though the algorithm will be tuned for the original graph and may not be
+efficient. This may be useful, for instance, to use a sampled subgraph to compute a plan for use on a the original
+larger graph.</p>
+</dd></dl>
+
+</section>
+<section id="statistics">
+<span id="id1"></span><h2>Statistics<a class="headerlink" href="#statistics" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.Statistics">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">Statistics</span></span><a class="headerlink" href="#katana.analytics.Statistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Each abstract algorithm has an <cite>Statistics</cite> class that computes and stores appropriate statistics on the outputs of
+of that algorithm. Computing the statistics is generally linear in the size of the graph and fast regardless of the
+underlying algorithm.</p>
+<p>Instances have properties to access statistics. See the specific subclasses for details. Instances can be converted
+to a human readable string: <cite>str(stat)</cite>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.Statistics.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.Statistics.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the appropriate statistics for the algorithm the subclass is associated with.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pg</strong> (<a class="reference internal" href="katana.property_graph.html#katana.property_graph.PropertyGraph" title="katana.property_graph.PropertyGraph"><em>katana.property_graph.PropertyGraph</em></a>) – The property graph containing the algorithm outputs.</p></li>
+<li><p><strong>args</strong><strong>...</strong> – Additional parameters needed to compute statistics, including output property names.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-katana.analytics._betweenness_centrality">
+<span id="algorithms"></span><h2>Algorithms<a class="headerlink" href="#module-katana.analytics._betweenness_centrality" title="Permalink to this headline">¶</a></h2>
+<section id="betweenness-centrality">
+<h3>Betweenness Centrality<a class="headerlink" href="#betweenness-centrality" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.BetweennessCentralityPlan">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">BetweennessCentralityPlan</span></span><a class="headerlink" href="#katana.analytics.BetweennessCentralityPlan" title="Permalink to this definition">¶</a></dt>
+<dd><p>A computational <a class="reference internal" href="#plan"><span class="std std-ref">Plans</span></a> for Betweenness Centrality.</p>
+<p>Static method construct BetweennessCentralityPlans using specific algorithms.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.BetweennessCentralityPlan.Algorithm">
+<span class="sig-name descname"><span class="pre">Algorithm</span></span><a class="headerlink" href="#katana.analytics.BetweennessCentralityPlan.Algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#katana.analytics._betweenness_centrality._BetweennessCentralityAlgorithm" title="katana.analytics._betweenness_centrality._BetweennessCentralityAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">katana.analytics._betweenness_centrality._BetweennessCentralityAlgorithm</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.BetweennessCentralityPlan.level">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">level</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.BetweennessCentralityPlan.level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process levels in parallel</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.BetweennessCentralityPlan.outer">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">outer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.BetweennessCentralityPlan.outer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parallelize outer-most iteration</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.BetweennessCentralityPlan.algorithm">
+<span class="sig-name descname"><span class="pre">algorithm</span></span><a class="headerlink" href="#katana.analytics.BetweennessCentralityPlan.algorithm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics._betweenness_centrality._BetweennessCentralityAlgorithm">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics._betweenness_centrality.</span></span><span class="sig-name descname"><span class="pre">_BetweennessCentralityAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics._betweenness_centrality._BetweennessCentralityAlgorithm" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">See</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#katana.analytics.BetweennessCentralityPlan" title="katana.analytics.BetweennessCentralityPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">BetweennessCentralityPlan</span></code></a> constructors for algorithm documentation.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._betweenness_centrality._BetweennessCentralityAlgorithm.Level">
+<span class="sig-name descname"><span class="pre">Level</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#katana.analytics._betweenness_centrality._BetweennessCentralityAlgorithm.Level" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._betweenness_centrality._BetweennessCentralityAlgorithm.Outer">
+<span class="sig-name descname"><span class="pre">Outer</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#katana.analytics._betweenness_centrality._BetweennessCentralityAlgorithm.Outer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.betweenness_centrality">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">betweenness_centrality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">pg</span></em>, <em class="sig-param"><span class="pre">output_property_name</span></em>, <em class="sig-param"><span class="pre">sources=None</span></em>, <em class="sig-param"><span class="pre">plan=&lt;katana.analytics._betweenness_centrality.BetweennessCentralityPlan</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.betweenness_centrality" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pg</strong> (<a class="reference internal" href="katana.property_graph.html#katana.property_graph.PropertyGraph" title="katana.property_graph.PropertyGraph"><em>PropertyGraph</em></a>) – The graph to analyze.</p></li>
+<li><p><strong>output_property_name</strong> (<em>str</em>) – The output property to write path lengths into. This property must not already exist.</p></li>
+<li><p><strong>sources</strong> (<em>Union</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>, </em><em>int</em><em>]</em>) – Only process some sources, producing an approximate betweenness centrality. If this is a list of node IDs process those source nodes; if this is an int process that number of source nodes.</p></li>
+<li><p><strong>plan</strong> (<a class="reference internal" href="#katana.analytics.BetweennessCentralityPlan" title="katana.analytics.BetweennessCentralityPlan"><em>BetweennessCentralityPlan</em></a>) – The execution plan to use.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.BetweennessCentralityStatistics">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">BetweennessCentralityStatistics</span></span><a class="headerlink" href="#katana.analytics.BetweennessCentralityStatistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the <a class="reference internal" href="#statistics"><span class="std std-ref">Statistics</span></a> of a Betweenness Centrality computation on a graph.</p>
+<p>All statistics are floats.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.BetweennessCentralityStatistics.average_centrality">
+<span class="sig-name descname"><span class="pre">average_centrality</span></span><a class="headerlink" href="#katana.analytics.BetweennessCentralityStatistics.average_centrality" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.BetweennessCentralityStatistics.max_centrality">
+<span class="sig-name descname"><span class="pre">max_centrality</span></span><a class="headerlink" href="#katana.analytics.BetweennessCentralityStatistics.max_centrality" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.BetweennessCentralityStatistics.min_centrality">
+<span class="sig-name descname"><span class="pre">min_centrality</span></span><a class="headerlink" href="#katana.analytics.BetweennessCentralityStatistics.min_centrality" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<span class="target" id="module-katana.analytics._bfs"></span><section id="breadth-first-search">
+<h3>Breadth-first Search<a class="headerlink" href="#breadth-first-search" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.BfsPlan">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">BfsPlan</span></span><a class="headerlink" href="#katana.analytics.BfsPlan" title="Permalink to this definition">¶</a></dt>
+<dd><p>A computational <a class="reference internal" href="#plan"><span class="std std-ref">Plans</span></a> for Breadth-First Search.</p>
+<p>Static method construct BfsPlans using specific algorithms with their required parameters. All parameters are
+optional and have reasonable defaults.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.BfsPlan.Algorithm">
+<span class="sig-name descname"><span class="pre">Algorithm</span></span><a class="headerlink" href="#katana.analytics.BfsPlan.Algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#katana.analytics._bfs._BfsAlgorithm" title="katana.analytics._bfs._BfsAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">katana.analytics._bfs._BfsAlgorithm</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.BfsPlan.asynchronous">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">asynchronous</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.BfsPlan.asynchronous" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.BfsPlan.asynchronous_tile">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">asynchronous_tile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_tile_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.BfsPlan.asynchronous_tile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asynchronous tiled</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.BfsPlan.synchronous">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">synchronous</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.BfsPlan.synchronous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bulk-synchronous</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.BfsPlan.synchronous_tile">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">synchronous_tile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_tile_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.BfsPlan.synchronous_tile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bulk-synchronous tiled</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.BfsPlan.algorithm">
+<span class="sig-name descname"><span class="pre">algorithm</span></span><a class="headerlink" href="#katana.analytics.BfsPlan.algorithm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.BfsPlan.edge_tile_size">
+<span class="sig-name descname"><span class="pre">edge_tile_size</span></span><a class="headerlink" href="#katana.analytics.BfsPlan.edge_tile_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>The size of tiles used for edge tiled algorithms.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics._bfs._BfsAlgorithm">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics._bfs.</span></span><span class="sig-name descname"><span class="pre">_BfsAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics._bfs._BfsAlgorithm" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">See</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#katana.analytics.BfsPlan" title="katana.analytics.BfsPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">BfsPlan</span></code></a> constructors for algorithm documentation.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._bfs._BfsAlgorithm.Asynchronous">
+<span class="sig-name descname"><span class="pre">Asynchronous</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#katana.analytics._bfs._BfsAlgorithm.Asynchronous" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._bfs._BfsAlgorithm.AsynchronousTile">
+<span class="sig-name descname"><span class="pre">AsynchronousTile</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#katana.analytics._bfs._BfsAlgorithm.AsynchronousTile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._bfs._BfsAlgorithm.Synchronous">
+<span class="sig-name descname"><span class="pre">Synchronous</span></span><em class="property"> <span class="pre">=</span> <span class="pre">3</span></em><a class="headerlink" href="#katana.analytics._bfs._BfsAlgorithm.Synchronous" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._bfs._BfsAlgorithm.SynchronousTile">
+<span class="sig-name descname"><span class="pre">SynchronousTile</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#katana.analytics._bfs._BfsAlgorithm.SynchronousTile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.bfs">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">bfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">pg</span></em>, <em class="sig-param"><span class="pre">start_node</span></em>, <em class="sig-param"><span class="pre">output_property_name</span></em>, <em class="sig-param"><span class="pre">plan=&lt;katana.analytics._bfs.BfsPlan</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.bfs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Breadth-First Search levels on <cite>pg</cite> using <cite>start_node</cite> as the source. The computed levels are
+written to the property <cite>output_property_name</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pg</strong> (<a class="reference internal" href="katana.property_graph.html#katana.property_graph.PropertyGraph" title="katana.property_graph.PropertyGraph"><em>PropertyGraph</em></a>) – The graph to analyze.</p></li>
+<li><p><strong>start_node</strong> (<em>Node ID</em>) – The source node.</p></li>
+<li><p><strong>output_property_name</strong> (<em>str</em>) – The output property to write path lengths into. This property must not already exist.</p></li>
+<li><p><strong>plan</strong> (<a class="reference internal" href="#katana.analytics.BfsPlan" title="katana.analytics.BfsPlan"><em>BfsPlan</em></a>) – The execution plan to use.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.BfsStatistics">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">BfsStatistics</span></span><a class="headerlink" href="#katana.analytics.BfsStatistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the <a class="reference internal" href="#statistics"><span class="std std-ref">Statistics</span></a> of an BFS computation on a graph.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.BfsStatistics.average_visited_distance">
+<span class="sig-name descname"><span class="pre">average_visited_distance</span></span><a class="headerlink" href="#katana.analytics.BfsStatistics.average_visited_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>The average level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>double</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.BfsStatistics.max_distance">
+<span class="sig-name descname"><span class="pre">max_distance</span></span><a class="headerlink" href="#katana.analytics.BfsStatistics.max_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.BfsStatistics.n_reached_nodes">
+<span class="sig-name descname"><span class="pre">n_reached_nodes</span></span><a class="headerlink" href="#katana.analytics.BfsStatistics.n_reached_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of nodes reachable from the source.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.bfs_assert_valid">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">bfs_assert_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">property_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.bfs_assert_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise an exception if the BFS results in <cite>pg</cite> appear to be incorrect. This is not an
+exhaustive check, just a sanity check.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p>AssertionError</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<span class="target" id="module-katana.analytics._connected_components"></span><section id="connected-components">
+<h3>Connected Components<a class="headerlink" href="#connected-components" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsPlan">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">ConnectedComponentsPlan</span></span><a class="headerlink" href="#katana.analytics.ConnectedComponentsPlan" title="Permalink to this definition">¶</a></dt>
+<dd><p>A computational <a class="reference internal" href="#plan"><span class="std std-ref">Plans</span></a> for Connected Components.</p>
+<p>Static method construct ConnectedComponentsPlans using specific algorithms with their required parameters. All
+parameters are optional and have reasonable defaults.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsPlan.Algorithm">
+<span class="sig-name descname"><span class="pre">Algorithm</span></span><a class="headerlink" href="#katana.analytics.ConnectedComponentsPlan.Algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm" title="katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsPlan.afforest">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">afforest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neighbor_sample_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_sample_frequency</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.ConnectedComponentsPlan" title="katana.analytics._connected_components.ConnectedComponentsPlan"><span class="pre">katana.analytics._connected_components.ConnectedComponentsPlan</span></a><a class="headerlink" href="#katana.analytics.ConnectedComponentsPlan.afforest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connected-components using Afforest sampling <a class="reference internal" href="#sutton" id="id2"><span>[Sutton]</span></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsPlan.asynchronous">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">asynchronous</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.ConnectedComponentsPlan" title="katana.analytics._connected_components.ConnectedComponentsPlan"><span class="pre">katana.analytics._connected_components.ConnectedComponentsPlan</span></a><a class="headerlink" href="#katana.analytics.ConnectedComponentsPlan.asynchronous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unlike Synchronous algorithm, Asynchronous doesn’t restrict path compression
+(UnionFind data structure) and can perform unions and finds concurrently.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsPlan.blocked_asynchronous">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">blocked_asynchronous</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.ConnectedComponentsPlan" title="katana.analytics._connected_components.ConnectedComponentsPlan"><span class="pre">katana.analytics._connected_components.ConnectedComponentsPlan</span></a><a class="headerlink" href="#katana.analytics.ConnectedComponentsPlan.blocked_asynchronous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Similar Asynchronous with the work-item as block of nodes.
+Improves performance of Asynchronous algorithm by following machine topology.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsPlan.edge_afforest">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">edge_afforest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neighbor_sample_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_sample_frequency</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.ConnectedComponentsPlan" title="katana.analytics._connected_components.ConnectedComponentsPlan"><span class="pre">katana.analytics._connected_components.ConnectedComponentsPlan</span></a><a class="headerlink" href="#katana.analytics.ConnectedComponentsPlan.edge_afforest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connected-components using Afforest sampling <a class="reference internal" href="#sutton" id="id3"><span>[Sutton]</span></a> with edge as work-item.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsPlan.edge_asynchronous">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">edge_asynchronous</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.ConnectedComponentsPlan" title="katana.analytics._connected_components.ConnectedComponentsPlan"><span class="pre">katana.analytics._connected_components.ConnectedComponentsPlan</span></a><a class="headerlink" href="#katana.analytics.ConnectedComponentsPlan.edge_asynchronous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Similar to Asynchronous, except that work-item is edge instead of node.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsPlan.edge_tiled_afforest">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">edge_tiled_afforest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_tile_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighbor_sample_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">component_sample_frequency</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.ConnectedComponentsPlan" title="katana.analytics._connected_components.ConnectedComponentsPlan"><span class="pre">katana.analytics._connected_components.ConnectedComponentsPlan</span></a><a class="headerlink" href="#katana.analytics.ConnectedComponentsPlan.edge_tiled_afforest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connected-components using Afforest sampling <a class="reference internal" href="#sutton" id="id4"><span>[Sutton]</span></a> with block of edges as work-item.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsPlan.edge_tiled_asynchronous">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">edge_tiled_asynchronous</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_tile_size</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.ConnectedComponentsPlan" title="katana.analytics._connected_components.ConnectedComponentsPlan"><span class="pre">katana.analytics._connected_components.ConnectedComponentsPlan</span></a><a class="headerlink" href="#katana.analytics.ConnectedComponentsPlan.edge_tiled_asynchronous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Similar EdgeSynchronous with the work-item as blocks of <cite>edge_tile_size</cite> edges.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsPlan.label_prop">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">label_prop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.ConnectedComponentsPlan" title="katana.analytics._connected_components.ConnectedComponentsPlan"><span class="pre">katana.analytics._connected_components.ConnectedComponentsPlan</span></a><a class="headerlink" href="#katana.analytics.ConnectedComponentsPlan.label_prop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Label propagation push-style algorithm. Initially, all nodes are in
+their own component IDs (same as their node IDs). Then, the component
+IDs are set to the minimum component ID in their neighborhood.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsPlan.serial">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">serial</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.ConnectedComponentsPlan" title="katana.analytics._connected_components.ConnectedComponentsPlan"><span class="pre">katana.analytics._connected_components.ConnectedComponentsPlan</span></a><a class="headerlink" href="#katana.analytics.ConnectedComponentsPlan.serial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serial connected components algorithm. Uses the union-find datastructure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsPlan.synchronous">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">synchronous</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.ConnectedComponentsPlan" title="katana.analytics._connected_components.ConnectedComponentsPlan"><span class="pre">katana.analytics._connected_components.ConnectedComponentsPlan</span></a><a class="headerlink" href="#katana.analytics.ConnectedComponentsPlan.synchronous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Synchronous connected components algorithm.  Initially all nodes are in
+their own component. Then, we merge endpoints of edges to form the spanning
+tree. Merging is done in two phases to simplify concurrent updates: (1)
+find components and (2) union components.  Since the merge phase does not
+do any finds, we only process a fraction of edges at a time; otherwise,
+the union phase may unnecessarily merge two endpoints in the same
+component.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsPlan.algorithm">
+<span class="sig-name descname"><span class="pre">algorithm</span></span><a class="headerlink" href="#katana.analytics.ConnectedComponentsPlan.algorithm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsPlan.component_sample_frequency">
+<span class="sig-name descname"><span class="pre">component_sample_frequency</span></span><a class="headerlink" href="#katana.analytics.ConnectedComponentsPlan.component_sample_frequency" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsPlan.edge_tile_size">
+<span class="sig-name descname"><span class="pre">edge_tile_size</span></span><a class="headerlink" href="#katana.analytics.ConnectedComponentsPlan.edge_tile_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>The size of tiles to use for edge-tiling.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsPlan.neighbor_sample_size">
+<span class="sig-name descname"><span class="pre">neighbor_sample_size</span></span><a class="headerlink" href="#katana.analytics.ConnectedComponentsPlan.neighbor_sample_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="citation">
+<dt class="label" id="sutton"><span class="brackets">Sutton</span><span class="fn-backref">(<a href="#id2">1</a>,<a href="#id3">2</a>,<a href="#id4">3</a>)</span></dt>
+<dd><p>M. Sutton, T. Ben-Nun and A. Barak, “Optimizing Parallel Graph
+Connectivity Computation via Subgraph Sampling,” 2018 IEEE International
+Parallel and Distributed Processing Symposium (IPDPS), Vancouver, BC, 2018,
+pp. 12-21.</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics._connected_components.</span></span><span class="sig-name descname"><span class="pre">_ConnectedComponentsPlanAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">See</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#katana.analytics.ConnectedComponentsPlan" title="katana.analytics.ConnectedComponentsPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConnectedComponentsPlan</span></code></a> constructors for algorithm documentation.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.Afforest">
+<span class="sig-name descname"><span class="pre">Afforest</span></span><em class="property"> <span class="pre">=</span> <span class="pre">7</span></em><a class="headerlink" href="#katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.Afforest" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.Asynchronous">
+<span class="sig-name descname"><span class="pre">Asynchronous</span></span><em class="property"> <span class="pre">=</span> <span class="pre">3</span></em><a class="headerlink" href="#katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.Asynchronous" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.BlockedAsynchronous">
+<span class="sig-name descname"><span class="pre">BlockedAsynchronous</span></span><em class="property"> <span class="pre">=</span> <span class="pre">6</span></em><a class="headerlink" href="#katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.BlockedAsynchronous" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.EdgeAfforest">
+<span class="sig-name descname"><span class="pre">EdgeAfforest</span></span><em class="property"> <span class="pre">=</span> <span class="pre">8</span></em><a class="headerlink" href="#katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.EdgeAfforest" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.EdgeAsynchronous">
+<span class="sig-name descname"><span class="pre">EdgeAsynchronous</span></span><em class="property"> <span class="pre">=</span> <span class="pre">4</span></em><a class="headerlink" href="#katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.EdgeAsynchronous" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.EdgeTiledAfforest">
+<span class="sig-name descname"><span class="pre">EdgeTiledAfforest</span></span><em class="property"> <span class="pre">=</span> <span class="pre">9</span></em><a class="headerlink" href="#katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.EdgeTiledAfforest" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.EdgeTiledAsynchronous">
+<span class="sig-name descname"><span class="pre">EdgeTiledAsynchronous</span></span><em class="property"> <span class="pre">=</span> <span class="pre">5</span></em><a class="headerlink" href="#katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.EdgeTiledAsynchronous" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.LabelProp">
+<span class="sig-name descname"><span class="pre">LabelProp</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.LabelProp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.Serial">
+<span class="sig-name descname"><span class="pre">Serial</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.Serial" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.Synchronous">
+<span class="sig-name descname"><span class="pre">Synchronous</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#katana.analytics._connected_components._ConnectedComponentsPlanAlgorithm.Synchronous" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.connected_components">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">connected_components</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">pg</span></em>, <em class="sig-param"><span class="pre">output_property_name</span></em>, <em class="sig-param"><span class="pre">plan=&lt;katana.analytics._connected_components.ConnectedComponentsPlan</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#katana.analytics.connected_components" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Connected-components for <cite>pg</cite>. <cite>pg</cite> must be symmetric.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pg</strong> (<a class="reference internal" href="katana.property_graph.html#katana.property_graph.PropertyGraph" title="katana.property_graph.PropertyGraph"><em>PropertyGraph</em></a>) – The graph to analyze.</p></li>
+<li><p><strong>output_property_name</strong> (<em>str</em>) – The output property to write path lengths into. This property must not already exist.</p></li>
+<li><p><strong>plan</strong> (<a class="reference internal" href="#katana.analytics.ConnectedComponentsPlan" title="katana.analytics.ConnectedComponentsPlan"><em>ConnectedComponentsPlan</em></a>) – The execution plan to use. Defaults to heuristically selecting the plan.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsStatistics">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">ConnectedComponentsStatistics</span></span><a class="headerlink" href="#katana.analytics.ConnectedComponentsStatistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the <a class="reference internal" href="#statistics"><span class="std std-ref">Statistics</span></a> of a Connected Components computation on a graph.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsStatistics.largest_component_ratio">
+<span class="sig-name descname"><span class="pre">largest_component_ratio</span></span><a class="headerlink" href="#katana.analytics.ConnectedComponentsStatistics.largest_component_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>The faction of the entire graph that is part of the largest component.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsStatistics.largest_component_size">
+<span class="sig-name descname"><span class="pre">largest_component_size</span></span><a class="headerlink" href="#katana.analytics.ConnectedComponentsStatistics.largest_component_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsStatistics.total_components">
+<span class="sig-name descname"><span class="pre">total_components</span></span><a class="headerlink" href="#katana.analytics.ConnectedComponentsStatistics.total_components" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.ConnectedComponentsStatistics.total_non_trivial_components">
+<span class="sig-name descname"><span class="pre">total_non_trivial_components</span></span><a class="headerlink" href="#katana.analytics.ConnectedComponentsStatistics.total_non_trivial_components" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<span class="target" id="module-katana.analytics._independent_set"></span><section id="independent-set">
+<h3>Independent Set<a class="headerlink" href="#independent-set" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.IndependentSetPlan">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">IndependentSetPlan</span></span><a class="headerlink" href="#katana.analytics.IndependentSetPlan" title="Permalink to this definition">¶</a></dt>
+<dd><p>A computational <a class="reference internal" href="#plan"><span class="std std-ref">Plans</span></a> for Independent Set.</p>
+<p>Static methods construct IndependentSetPlans.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.IndependentSetPlan.Algorithm">
+<span class="sig-name descname"><span class="pre">Algorithm</span></span><a class="headerlink" href="#katana.analytics.IndependentSetPlan.Algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#katana.analytics._independent_set._IndependentSetPlanAlgorithm" title="katana.analytics._independent_set._IndependentSetPlanAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">katana.analytics._independent_set._IndependentSetPlanAlgorithm</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.IndependentSetPlan.edge_tiled_priority">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">edge_tiled_priority</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.IndependentSetPlan.edge_tiled_priority" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.IndependentSetPlan.priority">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">priority</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.IndependentSetPlan.priority" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.IndependentSetPlan.pull">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">pull</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.IndependentSetPlan.pull" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.IndependentSetPlan.serial">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">serial</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.IndependentSetPlan.serial" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.IndependentSetPlan.algorithm">
+<span class="sig-name descname"><span class="pre">algorithm</span></span><a class="headerlink" href="#katana.analytics.IndependentSetPlan.algorithm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics._independent_set._IndependentSetPlanAlgorithm">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics._independent_set.</span></span><span class="sig-name descname"><span class="pre">_IndependentSetPlanAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics._independent_set._IndependentSetPlanAlgorithm" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">See</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#katana.analytics.IndependentSetPlan" title="katana.analytics.IndependentSetPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">IndependentSetPlan</span></code></a> constructors for algorithm documentation.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._independent_set._IndependentSetPlanAlgorithm.EdgeTiledPriority">
+<span class="sig-name descname"><span class="pre">EdgeTiledPriority</span></span><em class="property"> <span class="pre">=</span> <span class="pre">3</span></em><a class="headerlink" href="#katana.analytics._independent_set._IndependentSetPlanAlgorithm.EdgeTiledPriority" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._independent_set._IndependentSetPlanAlgorithm.Priority">
+<span class="sig-name descname"><span class="pre">Priority</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#katana.analytics._independent_set._IndependentSetPlanAlgorithm.Priority" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._independent_set._IndependentSetPlanAlgorithm.Pull">
+<span class="sig-name descname"><span class="pre">Pull</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#katana.analytics._independent_set._IndependentSetPlanAlgorithm.Pull" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._independent_set._IndependentSetPlanAlgorithm.Serial">
+<span class="sig-name descname"><span class="pre">Serial</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#katana.analytics._independent_set._IndependentSetPlanAlgorithm.Serial" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.independent_set">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">independent_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">pg</span></em>, <em class="sig-param"><span class="pre">output_property_name</span></em>, <em class="sig-param"><span class="pre">plan=&lt;katana.analytics._independent_set.IndependentSetPlan</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.independent_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find a maximal (not the maximum) independent set in the graph and create an indicator property that is true for
+elements of the independent set. The graph must be symmetric. The property named output_property_name is created by
+this function and may not exist before the call. The created property has type uint8_t.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pg</strong> (<a class="reference internal" href="katana.property_graph.html#katana.property_graph.PropertyGraph" title="katana.property_graph.PropertyGraph"><em>PropertyGraph</em></a>) – The graph to analyze.</p></li>
+<li><p><strong>output_property_name</strong> (<em>str</em>) – The output property to write path lengths into. This property must not already exist.</p></li>
+<li><p><strong>plan</strong> (<a class="reference internal" href="#katana.analytics.IndependentSetPlan" title="katana.analytics.IndependentSetPlan"><em>IndependentSetPlan</em></a>) – The execution plan to use.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.IndependentSetStatistics">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">IndependentSetStatistics</span></span><a class="headerlink" href="#katana.analytics.IndependentSetStatistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the <a class="reference internal" href="#statistics"><span class="std std-ref">Statistics</span></a> of an Independent Set.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.IndependentSetStatistics.cardinality">
+<span class="sig-name descname"><span class="pre">cardinality</span></span><a class="headerlink" href="#katana.analytics.IndependentSetStatistics.cardinality" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of nodes in the independent set.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.independent_set_assert_valid">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">independent_set_assert_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_property_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.independent_set_assert_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise an exception if the Independent Set results in <cite>pg</cite> are invalid. This is not an exhaustive check, just a
+sanity check.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p>AssertionError</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<span class="target" id="module-katana.analytics._louvain_clustering"></span><section id="louvain-clustering">
+<h3>Louvain Clustering<a class="headerlink" href="#louvain-clustering" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.LouvainClusteringPlan">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">LouvainClusteringPlan</span></span><a class="headerlink" href="#katana.analytics.LouvainClusteringPlan" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.LouvainClusteringPlan.Algorithm">
+<span class="sig-name descname"><span class="pre">Algorithm</span></span><a class="headerlink" href="#katana.analytics.LouvainClusteringPlan.Algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#katana.analytics._louvain_clustering._LouvainClusteringPlanAlgorithm" title="katana.analytics._louvain_clustering._LouvainClusteringPlanAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">katana.analytics._louvain_clustering._LouvainClusteringPlanAlgorithm</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.LouvainClusteringPlan.deterministic">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">deterministic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enable_vf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modularity_threshold_per_round</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modularity_threshold_total</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_graph_size</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.LouvainClusteringPlan" title="katana.analytics._louvain_clustering.LouvainClusteringPlan"><span class="pre">katana.analytics._louvain_clustering.LouvainClusteringPlan</span></a><a class="headerlink" href="#katana.analytics.LouvainClusteringPlan.deterministic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deterministic algorithm using delayed updates</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.LouvainClusteringPlan.do_all">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">do_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enable_vf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modularity_threshold_per_round</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modularity_threshold_total</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_graph_size</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.LouvainClusteringPlan" title="katana.analytics._louvain_clustering.LouvainClusteringPlan"><span class="pre">katana.analytics._louvain_clustering.LouvainClusteringPlan</span></a><a class="headerlink" href="#katana.analytics.LouvainClusteringPlan.do_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Nondeterministic algorithm.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.LouvainClusteringPlan.algorithm">
+<span class="sig-name descname"><span class="pre">algorithm</span></span><a class="headerlink" href="#katana.analytics.LouvainClusteringPlan.algorithm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.LouvainClusteringPlan.enable_vf">
+<span class="sig-name descname"><span class="pre">enable_vf</span></span><a class="headerlink" href="#katana.analytics.LouvainClusteringPlan.enable_vf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.LouvainClusteringPlan.max_iterations">
+<span class="sig-name descname"><span class="pre">max_iterations</span></span><a class="headerlink" href="#katana.analytics.LouvainClusteringPlan.max_iterations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.LouvainClusteringPlan.min_graph_size">
+<span class="sig-name descname"><span class="pre">min_graph_size</span></span><a class="headerlink" href="#katana.analytics.LouvainClusteringPlan.min_graph_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.LouvainClusteringPlan.modularity_threshold_per_round">
+<span class="sig-name descname"><span class="pre">modularity_threshold_per_round</span></span><a class="headerlink" href="#katana.analytics.LouvainClusteringPlan.modularity_threshold_per_round" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.LouvainClusteringPlan.modularity_threshold_total">
+<span class="sig-name descname"><span class="pre">modularity_threshold_total</span></span><a class="headerlink" href="#katana.analytics.LouvainClusteringPlan.modularity_threshold_total" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics._louvain_clustering._LouvainClusteringPlanAlgorithm">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics._louvain_clustering.</span></span><span class="sig-name descname"><span class="pre">_LouvainClusteringPlanAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics._louvain_clustering._LouvainClusteringPlanAlgorithm" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">See</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#katana.analytics.LouvainClusteringPlan" title="katana.analytics.LouvainClusteringPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">LouvainClusteringPlan</span></code></a> constructors for algorithm documentation.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._louvain_clustering._LouvainClusteringPlanAlgorithm.Deterministic">
+<span class="sig-name descname"><span class="pre">Deterministic</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#katana.analytics._louvain_clustering._LouvainClusteringPlanAlgorithm.Deterministic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._louvain_clustering._LouvainClusteringPlanAlgorithm.DoAll">
+<span class="sig-name descname"><span class="pre">DoAll</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#katana.analytics._louvain_clustering._LouvainClusteringPlanAlgorithm.DoAll" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.louvain_clustering">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">louvain_clustering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">pg</span></em>, <em class="sig-param"><span class="pre">edge_weight_property_name</span></em>, <em class="sig-param"><span class="pre">output_property_name</span></em>, <em class="sig-param"><span class="pre">plan=&lt;katana.analytics._louvain_clustering.LouvainClusteringPlan</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.louvain_clustering" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Louvain Clustering for pg.
+The edge weights are taken from the property named
+edge_weight_property_name (which may be a 32- or 64-bit sign or unsigned
+int), and the computed cluster IDs are stored in the property named
+output_property_name (as uint32_t).
+The property named output_property_name is created by this function and may
+not exist before the call.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.LouvainClusteringStatistics">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">LouvainClusteringStatistics</span></span><a class="headerlink" href="#katana.analytics.LouvainClusteringStatistics" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.LouvainClusteringStatistics.largest_cluster_proportion">
+<span class="sig-name descname"><span class="pre">largest_cluster_proportion</span></span><a class="headerlink" href="#katana.analytics.LouvainClusteringStatistics.largest_cluster_proportion" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.LouvainClusteringStatistics.largest_cluster_size">
+<span class="sig-name descname"><span class="pre">largest_cluster_size</span></span><a class="headerlink" href="#katana.analytics.LouvainClusteringStatistics.largest_cluster_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.LouvainClusteringStatistics.modularity">
+<span class="sig-name descname"><span class="pre">modularity</span></span><a class="headerlink" href="#katana.analytics.LouvainClusteringStatistics.modularity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.LouvainClusteringStatistics.n_clusters">
+<span class="sig-name descname"><span class="pre">n_clusters</span></span><a class="headerlink" href="#katana.analytics.LouvainClusteringStatistics.n_clusters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.LouvainClusteringStatistics.n_non_trivial_clusters">
+<span class="sig-name descname"><span class="pre">n_non_trivial_clusters</span></span><a class="headerlink" href="#katana.analytics.LouvainClusteringStatistics.n_non_trivial_clusters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.louvain_clustering_assert_valid">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">louvain_clustering_assert_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_weight_property_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_property_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.louvain_clustering_assert_valid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<span class="target" id="module-katana.analytics._local_clustering_coefficient"></span><section id="local-clustering-coefficient">
+<h3>Local Clustering Coefficient<a class="headerlink" href="#local-clustering-coefficient" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.LocalClusteringCoefficientPlan">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">LocalClusteringCoefficientPlan</span></span><a class="headerlink" href="#katana.analytics.LocalClusteringCoefficientPlan" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.LocalClusteringCoefficientPlan.Algorithm">
+<span class="sig-name descname"><span class="pre">Algorithm</span></span><a class="headerlink" href="#katana.analytics.LocalClusteringCoefficientPlan.Algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#katana.analytics._local_clustering_coefficient._LocalClusteringCoefficientPlanAlgorithm" title="katana.analytics._local_clustering_coefficient._LocalClusteringCoefficientPlanAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">katana.analytics._local_clustering_coefficient._LocalClusteringCoefficientPlanAlgorithm</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.LocalClusteringCoefficientPlan.ordered_count_atomics">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">ordered_count_atomics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">relabeling</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edges_sorted</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.LocalClusteringCoefficientPlan.ordered_count_atomics" title="Permalink to this definition">¶</a></dt>
+<dd><p>An ordered count algorithm that sorts the nodes by degree before
+execution. This has been found to give good performance. We implement the
+ordered count algorithm from the following:
+<a class="reference external" href="http://gap.cs.berkeley.edu/benchmark.html">http://gap.cs.berkeley.edu/benchmark.html</a></p>
+<p>This algorithm uses atomic instructions to update counts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>relabeling</strong> – Should the algorithm relabel the nodes.</p></li>
+<li><p><strong>edges_sorted</strong> – Are the edges of the graph already sorted.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.LocalClusteringCoefficientPlan.ordered_count_per_thread">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">ordered_count_per_thread</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">relabeling</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edges_sorted</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.LocalClusteringCoefficientPlan.ordered_count_per_thread" title="Permalink to this definition">¶</a></dt>
+<dd><p>An ordered count algorithm that sorts the nodes by degree before
+execution. This has been found to give good performance. We implement the
+ordered count algorithm from the following:
+<a class="reference external" href="http://gap.cs.berkeley.edu/benchmark.html">http://gap.cs.berkeley.edu/benchmark.html</a></p>
+<p>This algorithm uses thread-local counters for parallel counting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>relabeling</strong> – Should the algorithm relabel the nodes.</p></li>
+<li><p><strong>edges_sorted</strong> – Are the edges of the graph already sorted.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.LocalClusteringCoefficientPlan.algorithm">
+<span class="sig-name descname"><span class="pre">algorithm</span></span><a class="headerlink" href="#katana.analytics.LocalClusteringCoefficientPlan.algorithm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.LocalClusteringCoefficientPlan.edges_sorted">
+<span class="sig-name descname"><span class="pre">edges_sorted</span></span><a class="headerlink" href="#katana.analytics.LocalClusteringCoefficientPlan.edges_sorted" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.LocalClusteringCoefficientPlan.relabeling">
+<span class="sig-name descname"><span class="pre">relabeling</span></span><a class="headerlink" href="#katana.analytics.LocalClusteringCoefficientPlan.relabeling" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics._local_clustering_coefficient._LocalClusteringCoefficientPlanAlgorithm">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics._local_clustering_coefficient.</span></span><span class="sig-name descname"><span class="pre">_LocalClusteringCoefficientPlanAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics._local_clustering_coefficient._LocalClusteringCoefficientPlanAlgorithm" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">See</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#katana.analytics.LocalClusteringCoefficientPlan" title="katana.analytics.LocalClusteringCoefficientPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocalClusteringCoefficientPlan</span></code></a> constructors for algorithm documentation.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._local_clustering_coefficient._LocalClusteringCoefficientPlanAlgorithm.OrderedCountAtomics">
+<span class="sig-name descname"><span class="pre">OrderedCountAtomics</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#katana.analytics._local_clustering_coefficient._LocalClusteringCoefficientPlanAlgorithm.OrderedCountAtomics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._local_clustering_coefficient._LocalClusteringCoefficientPlanAlgorithm.OrderedCountPerThread">
+<span class="sig-name descname"><span class="pre">OrderedCountPerThread</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#katana.analytics._local_clustering_coefficient._LocalClusteringCoefficientPlanAlgorithm.OrderedCountPerThread" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.local_clustering_coefficient">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">local_clustering_coefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">pg</span></em>, <em class="sig-param"><span class="pre">output_property_name</span></em>, <em class="sig-param"><span class="pre">plan=&lt;katana.analytics._local_clustering_coefficient.LocalClusteringCoefficientPlan</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.local_clustering_coefficient" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<span class="target" id="module-katana.analytics._subgraph_extraction"></span><section id="subgraph-extraction">
+<h3>Subgraph Extraction<a class="headerlink" href="#subgraph-extraction" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.SubGraphExtractionPlan">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">SubGraphExtractionPlan</span></span><a class="headerlink" href="#katana.analytics.SubGraphExtractionPlan" title="Permalink to this definition">¶</a></dt>
+<dd><p>A computational <a class="reference internal" href="#plan"><span class="std std-ref">Plans</span></a> for subgraph extraction.</p>
+<p>Static methods construct SubGraphExtractionPlan. The constructor will select a reasonable default plan.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.SubGraphExtractionPlan.Algorithm">
+<span class="sig-name descname"><span class="pre">Algorithm</span></span><a class="headerlink" href="#katana.analytics.SubGraphExtractionPlan.Algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">katana.analytics._subgraph_extraction._SubGraphExtractionPlanAlgorithm</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.SubGraphExtractionPlan.node_set">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">node_set</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.SubGraphExtractionPlan" title="katana.analytics._subgraph_extraction.SubGraphExtractionPlan"><span class="pre">katana.analytics._subgraph_extraction.SubGraphExtractionPlan</span></a><a class="headerlink" href="#katana.analytics.SubGraphExtractionPlan.node_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>The node-set algorithm:</p>
+<ul class="simple">
+<li><p>Given a set of node ids, this algorithm constructs a new sub-graph</p></li>
+<li><p>connecting all the nodes in the set along with the properties requested.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.SubGraphExtractionPlan.algorithm">
+<span class="sig-name descname"><span class="pre">algorithm</span></span><a class="headerlink" href="#katana.analytics.SubGraphExtractionPlan.algorithm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.subgraph_extraction">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">subgraph_extraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">pg</span></em>, <em class="sig-param"><span class="pre">node_vec</span></em>, <em class="sig-param"><span class="pre">plan=&lt;katana.analytics._subgraph_extraction.SubGraphExtractionPlan</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">PropertyGraph</span><a class="headerlink" href="#katana.analytics.subgraph_extraction" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<span class="target" id="module-katana.analytics._jaccard"></span><section id="jaccard-similarity">
+<h3>Jaccard Similarity<a class="headerlink" href="#jaccard-similarity" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.JaccardPlan">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">JaccardPlan</span></span><a class="headerlink" href="#katana.analytics.JaccardPlan" title="Permalink to this definition">¶</a></dt>
+<dd><p>A computational <a class="reference internal" href="#plan"><span class="std std-ref">Plans</span></a> for Jaccard Similarity.</p>
+<p>Static methods construct JaccardPlans. The constructor will handle any edge ordering.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.JaccardPlan.EdgeSorting">
+<span class="sig-name descname"><span class="pre">EdgeSorting</span></span><a class="headerlink" href="#katana.analytics.JaccardPlan.EdgeSorting" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#katana.analytics._jaccard._JaccardEdgeSorting" title="katana.analytics._jaccard._JaccardEdgeSorting"><code class="xref py py-class docutils literal notranslate"><span class="pre">katana.analytics._jaccard._JaccardEdgeSorting</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.JaccardPlan.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.JaccardPlan.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>May attempt sorted intersections, but will fall back on exhaustive intersections.</p>
+<p>The edge ordering is not known.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.JaccardPlan.sorted">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">sorted</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.JaccardPlan.sorted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use the sorted-list intersection algorithm .</p>
+<p>The edges of the graph must be ordered by target node ID.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.JaccardPlan.unsorted">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">unsorted</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.JaccardPlan.unsorted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use the exhaustive intersection algorithm.</p>
+<p>The edges need not be ordered.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.JaccardPlan.edge_sorting">
+<span class="sig-name descname"><span class="pre">edge_sorting</span></span><a class="headerlink" href="#katana.analytics.JaccardPlan.edge_sorting" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ordering of input graph edges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>EdgeSorting</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics._jaccard._JaccardEdgeSorting">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics._jaccard.</span></span><span class="sig-name descname"><span class="pre">_JaccardEdgeSorting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics._jaccard._JaccardEdgeSorting" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ordering of edges in the input graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">See</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#katana.analytics.JaccardPlan" title="katana.analytics.JaccardPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">JaccardPlan</span></code></a> constructors for algorithm documentation.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._jaccard._JaccardEdgeSorting.Sorted">
+<span class="sig-name descname"><span class="pre">Sorted</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#katana.analytics._jaccard._JaccardEdgeSorting.Sorted" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._jaccard._JaccardEdgeSorting.Unknown">
+<span class="sig-name descname"><span class="pre">Unknown</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#katana.analytics._jaccard._JaccardEdgeSorting.Unknown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._jaccard._JaccardEdgeSorting.Unsorted">
+<span class="sig-name descname"><span class="pre">Unsorted</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#katana.analytics._jaccard._JaccardEdgeSorting.Unsorted" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.jaccard">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">jaccard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">pg</span></em>, <em class="sig-param"><span class="pre">compare_node</span></em>, <em class="sig-param"><span class="pre">output_property_name</span></em>, <em class="sig-param"><span class="pre">plan=&lt;katana.analytics._jaccard.JaccardPlan</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.jaccard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Jaccard Similarity between <cite>compare_node</cite> and all nodes in the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pg</strong> (<a class="reference internal" href="katana.property_graph.html#katana.property_graph.PropertyGraph" title="katana.property_graph.PropertyGraph"><em>PropertyGraph</em></a>) – The graph to analyze.</p></li>
+<li><p><strong>compare_node</strong> (<em>node ID</em>) – The node to compare to all nodes.</p></li>
+<li><p><strong>output_property_name</strong> (<em>str</em>) – The output property for similarities. This property must not already exist.</p></li>
+<li><p><strong>plan</strong> (<a class="reference internal" href="#katana.analytics.JaccardPlan" title="katana.analytics.JaccardPlan"><em>JaccardPlan</em></a>) – The execution plan to use.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.JaccardStatistics">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">JaccardStatistics</span></span><a class="headerlink" href="#katana.analytics.JaccardStatistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the <a class="reference internal" href="#statistics"><span class="std std-ref">Statistics</span></a> of a Jaccard Similarity result.</p>
+<p>All statistics are <cite>floats</cite>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.JaccardStatistics.average_similarity">
+<span class="sig-name descname"><span class="pre">average_similarity</span></span><a class="headerlink" href="#katana.analytics.JaccardStatistics.average_similarity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.JaccardStatistics.max_similarity">
+<span class="sig-name descname"><span class="pre">max_similarity</span></span><a class="headerlink" href="#katana.analytics.JaccardStatistics.max_similarity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.JaccardStatistics.min_similarity">
+<span class="sig-name descname"><span class="pre">min_similarity</span></span><a class="headerlink" href="#katana.analytics.JaccardStatistics.min_similarity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.jaccard_assert_valid">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">jaccard_assert_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compare_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_property_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.jaccard_assert_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise an exception if the Jaccard Similarity results in <cite>pg</cite> are invalid. This is not an exhaustive check, just a
+sanity check.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p>AssertionError</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<span class="target" id="module-katana.analytics._k_core"></span><section id="k-core">
+<h3>k-Core<a class="headerlink" href="#k-core" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.KCorePlan">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">KCorePlan</span></span><a class="headerlink" href="#katana.analytics.KCorePlan" title="Permalink to this definition">¶</a></dt>
+<dd><p>A computational <a class="reference internal" href="#plan"><span class="std std-ref">Plans</span></a> for k-Core.</p>
+<p>Static methods construct KCorePlans.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.KCorePlan.Algorithm">
+<span class="sig-name descname"><span class="pre">Algorithm</span></span><a class="headerlink" href="#katana.analytics.KCorePlan.Algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#katana.analytics._k_core._KCorePlanAlgorithm" title="katana.analytics._k_core._KCorePlanAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">katana.analytics._k_core._KCorePlanAlgorithm</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.KCorePlan.asynchronous">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">asynchronous</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.KCorePlan" title="katana.analytics._k_core.KCorePlan"><span class="pre">katana.analytics._k_core.KCorePlan</span></a><a class="headerlink" href="#katana.analytics.KCorePlan.asynchronous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asynchronous</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.KCorePlan.synchronous">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">synchronous</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.KCorePlan" title="katana.analytics._k_core.KCorePlan"><span class="pre">katana.analytics._k_core.KCorePlan</span></a><a class="headerlink" href="#katana.analytics.KCorePlan.synchronous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bulk-synchronous</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.KCorePlan.algorithm">
+<span class="sig-name descname"><span class="pre">algorithm</span></span><a class="headerlink" href="#katana.analytics.KCorePlan.algorithm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics._k_core._KCorePlanAlgorithm">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics._k_core.</span></span><span class="sig-name descname"><span class="pre">_KCorePlanAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics._k_core._KCorePlanAlgorithm" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">See</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#katana.analytics.KCorePlan" title="katana.analytics.KCorePlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">KCorePlan</span></code></a> constructors for algorithm documentation.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._k_core._KCorePlanAlgorithm.Asynchronous">
+<span class="sig-name descname"><span class="pre">Asynchronous</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#katana.analytics._k_core._KCorePlanAlgorithm.Asynchronous" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._k_core._KCorePlanAlgorithm.Synchronous">
+<span class="sig-name descname"><span class="pre">Synchronous</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#katana.analytics._k_core._KCorePlanAlgorithm.Synchronous" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.k_core">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">k_core</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">pg</span></em>, <em class="sig-param"><span class="pre">k_core_number</span></em>, <em class="sig-param"><span class="pre">output_property_name</span></em>, <em class="sig-param"><span class="pre">plan=&lt;katana.analytics._k_core.KCorePlan</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#katana.analytics.k_core" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute nodes which are in the k-core of pg. The pg must be symmetric.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pg</strong> (<a class="reference internal" href="katana.property_graph.html#katana.property_graph.PropertyGraph" title="katana.property_graph.PropertyGraph"><em>PropertyGraph</em></a>) – The graph to analyze.</p></li>
+<li><p><strong>k_core_number</strong> – <ol class="loweralpha simple" start="11">
+<li><p>The minimum degree of nodes in the resulting core.</p></li>
+</ol>
+</p></li>
+<li><p><strong>output_property_name</strong> (<em>str</em>) – The output property holding an indicator 1 if the node is in the k-core, 0 otherwise.
+This property must not already exist.</p></li>
+<li><p><strong>plan</strong> (<a class="reference internal" href="#katana.analytics.KCorePlan" title="katana.analytics.KCorePlan"><em>KCorePlan</em></a>) – The execution plan to use.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.KCoreStatistics">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">KCoreStatistics</span></span><a class="headerlink" href="#katana.analytics.KCoreStatistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the <a class="reference internal" href="#statistics"><span class="std std-ref">Statistics</span></a> of a k-Core result.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.KCoreStatistics.number_of_nodes_in_kcore">
+<span class="sig-name descname"><span class="pre">number_of_nodes_in_kcore</span></span><a class="headerlink" href="#katana.analytics.KCoreStatistics.number_of_nodes_in_kcore" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.k_core_assert_valid">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">k_core_assert_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_core_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_property_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.k_core_assert_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise an exception if the k-core results in <cite>pg</cite> are invalid. This is not an exhaustive check, just a sanity check.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p>AssertionError</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<span class="target" id="module-katana.analytics._k_truss"></span><section id="k-truss">
+<h3>k-Truss<a class="headerlink" href="#k-truss" title="Permalink to this headline">¶</a></h3>
+<p>The k-Truss is a maximal connected subgraph in which all edges are part of at least (k-2) triangles.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.KTrussPlan">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">KTrussPlan</span></span><a class="headerlink" href="#katana.analytics.KTrussPlan" title="Permalink to this definition">¶</a></dt>
+<dd><p>A computational <a class="reference internal" href="#plan"><span class="std std-ref">Plans</span></a> for k-truss.</p>
+<p>Static methods construct KTrussPlans. The constructor will select a reasonable default plan.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.KTrussPlan.Algorithm">
+<span class="sig-name descname"><span class="pre">Algorithm</span></span><a class="headerlink" href="#katana.analytics.KTrussPlan.Algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#katana.analytics._k_truss._KTrussPlanAlgorithm" title="katana.analytics._k_truss._KTrussPlanAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">katana.analytics._k_truss._KTrussPlanAlgorithm</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.KTrussPlan.bsp">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">bsp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.KTrussPlan" title="katana.analytics._k_truss.KTrussPlan"><span class="pre">katana.analytics._k_truss.KTrussPlan</span></a><a class="headerlink" href="#katana.analytics.KTrussPlan.bsp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bulk-synchronous parallel algorithm.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.KTrussPlan.bsp_core_then_truss">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">bsp_core_then_truss</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.KTrussPlan" title="katana.analytics._k_truss.KTrussPlan"><span class="pre">katana.analytics._k_truss.KTrussPlan</span></a><a class="headerlink" href="#katana.analytics.KTrussPlan.bsp_core_then_truss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute k-1 core and then k-truss algorithm.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.KTrussPlan.bsp_jacobi">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">bsp_jacobi</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.KTrussPlan" title="katana.analytics._k_truss.KTrussPlan"><span class="pre">katana.analytics._k_truss.KTrussPlan</span></a><a class="headerlink" href="#katana.analytics.KTrussPlan.bsp_jacobi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bulk-synchronous parallel with separated edge removal algorithm.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.KTrussPlan.algorithm">
+<span class="sig-name descname"><span class="pre">algorithm</span></span><a class="headerlink" href="#katana.analytics.KTrussPlan.algorithm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics._k_truss._KTrussPlanAlgorithm">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics._k_truss.</span></span><span class="sig-name descname"><span class="pre">_KTrussPlanAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics._k_truss._KTrussPlanAlgorithm" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">See</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#katana.analytics.KTrussPlan" title="katana.analytics.KTrussPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">KTrussPlan</span></code></a> constructors for algorithm documentation.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._k_truss._KTrussPlanAlgorithm.Bsp">
+<span class="sig-name descname"><span class="pre">Bsp</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#katana.analytics._k_truss._KTrussPlanAlgorithm.Bsp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._k_truss._KTrussPlanAlgorithm.BspCoreThenTruss">
+<span class="sig-name descname"><span class="pre">BspCoreThenTruss</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#katana.analytics._k_truss._KTrussPlanAlgorithm.BspCoreThenTruss" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._k_truss._KTrussPlanAlgorithm.BspJacobi">
+<span class="sig-name descname"><span class="pre">BspJacobi</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#katana.analytics._k_truss._KTrussPlanAlgorithm.BspJacobi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.k_truss">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">k_truss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">pg</span></em>, <em class="sig-param"><span class="pre">k_truss_number</span></em>, <em class="sig-param"><span class="pre">output_property_name</span></em>, <em class="sig-param"><span class="pre">plan=&lt;katana.analytics._k_truss.KTrussPlan</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#katana.analytics.k_truss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the k-truss for pg. <cite>pg</cite> must be symmetric.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pg</strong> (<a class="reference internal" href="katana.property_graph.html#katana.property_graph.PropertyGraph" title="katana.property_graph.PropertyGraph"><em>PropertyGraph</em></a>) – The graph to analyze.</p></li>
+<li><p><strong>k_truss_number</strong> – <ol class="loweralpha simple" start="11">
+<li><p>The number of triangles that each edge must be part of.</p></li>
+</ol>
+</p></li>
+<li><p><strong>output_property_name</strong> (<em>str</em>) – The output edge property specifying if that edge is in the k-truss.
+This property must not already exist.</p></li>
+<li><p><strong>plan</strong> (<a class="reference internal" href="#katana.analytics.KTrussPlan" title="katana.analytics.KTrussPlan"><em>KTrussPlan</em></a>) – The execution plan to use.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.KTrussStatistics">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">KTrussStatistics</span></span><a class="headerlink" href="#katana.analytics.KTrussStatistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the <a class="reference internal" href="#statistics"><span class="std std-ref">Statistics</span></a> of a k-truss.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.KTrussStatistics.number_of_edges_left">
+<span class="sig-name descname"><span class="pre">number_of_edges_left</span></span><a class="headerlink" href="#katana.analytics.KTrussStatistics.number_of_edges_left" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.k_truss_assert_valid">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">k_truss_assert_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_truss_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_property_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.k_truss_assert_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise an exception if the k-truss results in <cite>pg</cite> are invalid. This is not an exhaustive check, just a sanity check.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p>AssertionError</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<span class="target" id="module-katana.analytics._pagerank"></span><section id="page-rank">
+<h3>Page Rank<a class="headerlink" href="#page-rank" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.PagerankPlan">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">PagerankPlan</span></span><a class="headerlink" href="#katana.analytics.PagerankPlan" title="Permalink to this definition">¶</a></dt>
+<dd><p>A computational <a class="reference internal" href="#plan"><span class="std std-ref">Plans</span></a> for Page Rank.</p>
+<p>Static methods construct PagerankPlans.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.PagerankPlan.Algorithm">
+<span class="sig-name descname"><span class="pre">Algorithm</span></span><a class="headerlink" href="#katana.analytics.PagerankPlan.Algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#katana.analytics._pagerank._PagerankPlanAlgorithm" title="katana.analytics._pagerank._PagerankPlanAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">katana.analytics._pagerank._PagerankPlanAlgorithm</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.PagerankPlan.pull_residual">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">pull_residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tolerance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.PagerankPlan.pull_residual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delta-residual pull algorithm</p>
+<p>The graph must be transposed to use this algorithm.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.PagerankPlan.pull_topological">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">pull_topological</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tolerance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.PagerankPlan.pull_topological" title="Permalink to this definition">¶</a></dt>
+<dd><p>Topological pull algorithm</p>
+<p>The graph must be transposed to use this algorithm.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.PagerankPlan.push_asynchronous">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">push_asynchronous</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tolerance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.PagerankPlan.push_asynchronous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asynchronous push algorithm</p>
+<p>This implementation is based on the Push-based PageRank computation
+(Algorithm 4) as described in the PageRank Europar 2015 paper <a class="reference internal" href="#whang" id="id5"><span>[WHANG]</span></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.PagerankPlan.push_synchronous">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">push_synchronous</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tolerance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.PagerankPlan.push_synchronous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Synchronous push algorithm</p>
+<p>This implementation is based on the Push-based PageRank computation
+(Algorithm 4) as described in the PageRank Europar 2015 paper <a class="reference internal" href="#whang" id="id6"><span>[WHANG]</span></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.PagerankPlan.algorithm">
+<span class="sig-name descname"><span class="pre">algorithm</span></span><a class="headerlink" href="#katana.analytics.PagerankPlan.algorithm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.PagerankPlan.alpha">
+<span class="sig-name descname"><span class="pre">alpha</span></span><a class="headerlink" href="#katana.analytics.PagerankPlan.alpha" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.PagerankPlan.initial_residual">
+<span class="sig-name descname"><span class="pre">initial_residual</span></span><a class="headerlink" href="#katana.analytics.PagerankPlan.initial_residual" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.PagerankPlan.max_iterations">
+<span class="sig-name descname"><span class="pre">max_iterations</span></span><a class="headerlink" href="#katana.analytics.PagerankPlan.max_iterations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.PagerankPlan.tolerance">
+<span class="sig-name descname"><span class="pre">tolerance</span></span><a class="headerlink" href="#katana.analytics.PagerankPlan.tolerance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="citation">
+<dt class="label" id="whang"><span class="brackets">WHANG</span><span class="fn-backref">(<a href="#id5">1</a>,<a href="#id6">2</a>)</span></dt>
+<dd><p>WHANG, Joyce Jiyoung, et al. Scalable data-driven pagerank: Algorithms,
+system issues, and lessons learned. In: European Conference on Parallel
+Processing. Springer, Berlin, Heidelberg, 2015. p. 438-450.</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics._pagerank._PagerankPlanAlgorithm">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics._pagerank.</span></span><span class="sig-name descname"><span class="pre">_PagerankPlanAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics._pagerank._PagerankPlanAlgorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._pagerank._PagerankPlanAlgorithm.PullResidual">
+<span class="sig-name descname"><span class="pre">PullResidual</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#katana.analytics._pagerank._PagerankPlanAlgorithm.PullResidual" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._pagerank._PagerankPlanAlgorithm.PullTopological">
+<span class="sig-name descname"><span class="pre">PullTopological</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#katana.analytics._pagerank._PagerankPlanAlgorithm.PullTopological" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._pagerank._PagerankPlanAlgorithm.PushAsynchronous">
+<span class="sig-name descname"><span class="pre">PushAsynchronous</span></span><em class="property"> <span class="pre">=</span> <span class="pre">3</span></em><a class="headerlink" href="#katana.analytics._pagerank._PagerankPlanAlgorithm.PushAsynchronous" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._pagerank._PagerankPlanAlgorithm.PushSynchronous">
+<span class="sig-name descname"><span class="pre">PushSynchronous</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#katana.analytics._pagerank._PagerankPlanAlgorithm.PushSynchronous" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.pagerank">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">pagerank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">pg</span></em>, <em class="sig-param"><span class="pre">output_property_name</span></em>, <em class="sig-param"><span class="pre">plan=&lt;katana.analytics._pagerank.PagerankPlan</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.pagerank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Page Rank of each node in the graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pg</strong> (<a class="reference internal" href="katana.property_graph.html#katana.property_graph.PropertyGraph" title="katana.property_graph.PropertyGraph"><em>PropertyGraph</em></a>) – The graph to analyze.</p></li>
+<li><p><strong>output_property_name</strong> (<em>str</em>) – The output property to store the rank. This property must not already exist.</p></li>
+<li><p><strong>plan</strong> (<a class="reference internal" href="#katana.analytics.PagerankPlan" title="katana.analytics.PagerankPlan"><em>PagerankPlan</em></a>) – The execution plan to use.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.PagerankStatistics">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">PagerankStatistics</span></span><a class="headerlink" href="#katana.analytics.PagerankStatistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the <a class="reference internal" href="#statistics"><span class="std std-ref">Statistics</span></a> of a Page Rank result.</p>
+<p>All statistics are <cite>float</cite>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.PagerankStatistics.average_rank">
+<span class="sig-name descname"><span class="pre">average_rank</span></span><a class="headerlink" href="#katana.analytics.PagerankStatistics.average_rank" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.PagerankStatistics.max_rank">
+<span class="sig-name descname"><span class="pre">max_rank</span></span><a class="headerlink" href="#katana.analytics.PagerankStatistics.max_rank" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.PagerankStatistics.min_rank">
+<span class="sig-name descname"><span class="pre">min_rank</span></span><a class="headerlink" href="#katana.analytics.PagerankStatistics.min_rank" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.pagerank_assert_valid">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">pagerank_assert_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_property_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.pagerank_assert_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise an exception if the pagerank results in <cite>pg</cite> are invalid. This is not an exhaustive check, just a sanity check.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p>AssertionError</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<span class="target" id="module-katana.analytics._sssp"></span><section id="single-source-shortest-path">
+<h3>Single-Source Shortest Path<a class="headerlink" href="#single-source-shortest-path" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.SsspPlan">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">SsspPlan</span></span><a class="headerlink" href="#katana.analytics.SsspPlan" title="Permalink to this definition">¶</a></dt>
+<dd><p>A computational <a class="reference internal" href="#plan"><span class="std std-ref">Plans</span></a> for Single-Source Shortest Path.</p>
+<p>Static method construct SsspPlans using specific algorithms with their required parameters. All parameters are
+optional and have reasonable defaults.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.SsspPlan.Algorithm">
+<span class="sig-name descname"><span class="pre">Algorithm</span></span><a class="headerlink" href="#katana.analytics.SsspPlan.Algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#katana.analytics._sssp._SsspAlgorithm" title="katana.analytics._sssp._SsspAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">katana.analytics._sssp._SsspAlgorithm</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.SsspPlan.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.SsspPlan.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Choose an algorithm using heuristics</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.SsspPlan.delta_step">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">delta_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.SsspPlan" title="katana.analytics._sssp.SsspPlan"><span class="pre">katana.analytics._sssp.SsspPlan</span></a><a class="headerlink" href="#katana.analytics.SsspPlan.delta_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delta stepping (non-tiled)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.SsspPlan.delta_step_barrier">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">delta_step_barrier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.SsspPlan" title="katana.analytics._sssp.SsspPlan"><span class="pre">katana.analytics._sssp.SsspPlan</span></a><a class="headerlink" href="#katana.analytics.SsspPlan.delta_step_barrier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delta stepping with barrier</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.SsspPlan.delta_tile">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">delta_tile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_tile_size</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.SsspPlan" title="katana.analytics._sssp.SsspPlan"><span class="pre">katana.analytics._sssp.SsspPlan</span></a><a class="headerlink" href="#katana.analytics.SsspPlan.delta_tile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delta stepping tiled</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.SsspPlan.dijkstra">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">dijkstra</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.SsspPlan" title="katana.analytics._sssp.SsspPlan"><span class="pre">katana.analytics._sssp.SsspPlan</span></a><a class="headerlink" href="#katana.analytics.SsspPlan.dijkstra" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dijkstra’s algorithm (non-tiled)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.SsspPlan.dijkstra_tile">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">dijkstra_tile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_tile_size</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.SsspPlan" title="katana.analytics._sssp.SsspPlan"><span class="pre">katana.analytics._sssp.SsspPlan</span></a><a class="headerlink" href="#katana.analytics.SsspPlan.dijkstra_tile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dijkstra’s algorithm tiled</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.SsspPlan.serial_delta">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">serial_delta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.SsspPlan" title="katana.analytics._sssp.SsspPlan"><span class="pre">katana.analytics._sssp.SsspPlan</span></a><a class="headerlink" href="#katana.analytics.SsspPlan.serial_delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serial delta stepping</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.SsspPlan.serial_delta_tile">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">serial_delta_tile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_tile_size</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.SsspPlan" title="katana.analytics._sssp.SsspPlan"><span class="pre">katana.analytics._sssp.SsspPlan</span></a><a class="headerlink" href="#katana.analytics.SsspPlan.serial_delta_tile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serial delta stepping tiled</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.SsspPlan.topological">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">topological</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.SsspPlan" title="katana.analytics._sssp.SsspPlan"><span class="pre">katana.analytics._sssp.SsspPlan</span></a><a class="headerlink" href="#katana.analytics.SsspPlan.topological" title="Permalink to this definition">¶</a></dt>
+<dd><p>Topological</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.SsspPlan.topological_tile">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">topological_tile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_tile_size</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#katana.analytics.SsspPlan" title="katana.analytics._sssp.SsspPlan"><span class="pre">katana.analytics._sssp.SsspPlan</span></a><a class="headerlink" href="#katana.analytics.SsspPlan.topological_tile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Topological tiled</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.SsspPlan.algorithm">
+<span class="sig-name descname"><span class="pre">algorithm</span></span><a class="headerlink" href="#katana.analytics.SsspPlan.algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>The selected algorithm.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.SsspPlan.delta">
+<span class="sig-name descname"><span class="pre">delta</span></span><a class="headerlink" href="#katana.analytics.SsspPlan.delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>The exponent of the delta step size (2 based). A delta of 4 will produce a real delta step size of 16.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.SsspPlan.edge_tile_size">
+<span class="sig-name descname"><span class="pre">edge_tile_size</span></span><a class="headerlink" href="#katana.analytics.SsspPlan.edge_tile_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>The edge tile size.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics._sssp._SsspAlgorithm">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics._sssp.</span></span><span class="sig-name descname"><span class="pre">_SsspAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics._sssp._SsspAlgorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>The concrete algorithms available for SSSP.</p>
+<dl class="field-list simple">
+<dt class="field-odd">See</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#katana.analytics.SsspPlan" title="katana.analytics.SsspPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">SsspPlan</span></code></a> constructors for algorithm documentation.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._sssp._SsspAlgorithm.Automatic">
+<span class="sig-name descname"><span class="pre">Automatic</span></span><em class="property"> <span class="pre">=</span> <span class="pre">9</span></em><a class="headerlink" href="#katana.analytics._sssp._SsspAlgorithm.Automatic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._sssp._SsspAlgorithm.DeltaStep">
+<span class="sig-name descname"><span class="pre">DeltaStep</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#katana.analytics._sssp._SsspAlgorithm.DeltaStep" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._sssp._SsspAlgorithm.DeltaStepBarrier">
+<span class="sig-name descname"><span class="pre">DeltaStepBarrier</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#katana.analytics._sssp._SsspAlgorithm.DeltaStepBarrier" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._sssp._SsspAlgorithm.DeltaTile">
+<span class="sig-name descname"><span class="pre">DeltaTile</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#katana.analytics._sssp._SsspAlgorithm.DeltaTile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._sssp._SsspAlgorithm.Dijkstra">
+<span class="sig-name descname"><span class="pre">Dijkstra</span></span><em class="property"> <span class="pre">=</span> <span class="pre">6</span></em><a class="headerlink" href="#katana.analytics._sssp._SsspAlgorithm.Dijkstra" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._sssp._SsspAlgorithm.DijkstraTile">
+<span class="sig-name descname"><span class="pre">DijkstraTile</span></span><em class="property"> <span class="pre">=</span> <span class="pre">5</span></em><a class="headerlink" href="#katana.analytics._sssp._SsspAlgorithm.DijkstraTile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._sssp._SsspAlgorithm.SerialDelta">
+<span class="sig-name descname"><span class="pre">SerialDelta</span></span><em class="property"> <span class="pre">=</span> <span class="pre">4</span></em><a class="headerlink" href="#katana.analytics._sssp._SsspAlgorithm.SerialDelta" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._sssp._SsspAlgorithm.SerialDeltaTile">
+<span class="sig-name descname"><span class="pre">SerialDeltaTile</span></span><em class="property"> <span class="pre">=</span> <span class="pre">3</span></em><a class="headerlink" href="#katana.analytics._sssp._SsspAlgorithm.SerialDeltaTile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._sssp._SsspAlgorithm.Topological">
+<span class="sig-name descname"><span class="pre">Topological</span></span><em class="property"> <span class="pre">=</span> <span class="pre">7</span></em><a class="headerlink" href="#katana.analytics._sssp._SsspAlgorithm.Topological" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._sssp._SsspAlgorithm.TopologicalTile">
+<span class="sig-name descname"><span class="pre">TopologicalTile</span></span><em class="property"> <span class="pre">=</span> <span class="pre">8</span></em><a class="headerlink" href="#katana.analytics._sssp._SsspAlgorithm.TopologicalTile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.sssp">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">sssp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">pg</span></em>, <em class="sig-param"><span class="pre">start_node</span></em>, <em class="sig-param"><span class="pre">edge_weight_property_name</span></em>, <em class="sig-param"><span class="pre">output_property_name</span></em>, <em class="sig-param"><span class="pre">plan=&lt;katana.analytics._sssp.SsspPlan</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.sssp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Single-Source Shortest Path on <cite>pg</cite> using <cite>start_node</cite> as the source. The computed path lengths are
+written to the property <cite>output_property_name</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pg</strong> (<a class="reference internal" href="katana.property_graph.html#katana.property_graph.PropertyGraph" title="katana.property_graph.PropertyGraph"><em>PropertyGraph</em></a>) – The graph to analyze.</p></li>
+<li><p><strong>start_node</strong> (<em>Node ID</em>) – The source node.</p></li>
+<li><p><strong>edge_weight_property_name</strong> (<em>str</em>) – The input property containing edge weights.</p></li>
+<li><p><strong>output_property_name</strong> (<em>str</em>) – The output property to write path lengths into. This property must not already exist.</p></li>
+<li><p><strong>plan</strong> (<a class="reference internal" href="#katana.analytics.SsspPlan" title="katana.analytics.SsspPlan"><em>SsspPlan</em></a>) – The execution plan to use. Defaults to heuristically selecting the plan.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.SsspStatistics">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">SsspStatistics</span></span><a class="headerlink" href="#katana.analytics.SsspStatistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the <a class="reference internal" href="#statistics"><span class="std std-ref">Statistics</span></a> of an SSSP computation on a graph.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.SsspStatistics.average_visited_distance">
+<span class="sig-name descname"><span class="pre">average_visited_distance</span></span><a class="headerlink" href="#katana.analytics.SsspStatistics.average_visited_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>The average path length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.SsspStatistics.max_distance">
+<span class="sig-name descname"><span class="pre">max_distance</span></span><a class="headerlink" href="#katana.analytics.SsspStatistics.max_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum path length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.SsspStatistics.n_reached_nodes">
+<span class="sig-name descname"><span class="pre">n_reached_nodes</span></span><a class="headerlink" href="#katana.analytics.SsspStatistics.n_reached_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of nodes reachable from the source.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.sssp_assert_valid">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">sssp_assert_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_weight_property_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_property_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.sssp_assert_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise an exception if the SSSP results in <cite>pg</cite> with the given parameters appear to be incorrect. This is not an
+exhaustive check, just a sanity check.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p>AssertionError</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<span class="target" id="module-katana.analytics._triangle_count"></span><section id="triangle-counting">
+<h3>Triangle Counting<a class="headerlink" href="#triangle-counting" title="Permalink to this headline">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics.TriangleCountPlan">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">TriangleCountPlan</span></span><a class="headerlink" href="#katana.analytics.TriangleCountPlan" title="Permalink to this definition">¶</a></dt>
+<dd><p>A computational <a class="reference internal" href="#plan"><span class="std std-ref">Plans</span></a> for Triangle Counting.</p>
+<p>Static methods construct TriangleCountPlans.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.TriangleCountPlan.Algorithm">
+<span class="sig-name descname"><span class="pre">Algorithm</span></span><a class="headerlink" href="#katana.analytics.TriangleCountPlan.Algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#katana.analytics._triangle_count._TriangleCountPlanAlgorithm" title="katana.analytics._triangle_count._TriangleCountPlanAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">katana.analytics._triangle_count._TriangleCountPlanAlgorithm</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.TriangleCountPlan.edge_iteration">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">edge_iteration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edges_sorted</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relabeling</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.TriangleCountPlan.edge_iteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>The edge-iterator algorithm due to Thomas Schank <a class="reference internal" href="#schank" id="id7"><span>[Schank]</span></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>edges_sorted</strong> (<em>bool</em>) – Are the edges of the graph already sorted?</p></li>
+<li><p><strong>relabeling</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Should the algorithm relabel the nodes? Or <cite>None</cite> to decide heuristically.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.TriangleCountPlan.node_iteration">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">node_iteration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edges_sorted</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relabeling</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.TriangleCountPlan.node_iteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>The node-iterator algorithm due to Thomas Schank <a class="reference internal" href="#schank" id="id8"><span>[Schank]</span></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>edges_sorted</strong> (<em>bool</em>) – Are the edges of the graph already sorted?</p></li>
+<li><p><strong>relabeling</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Should the algorithm relabel the nodes? Or <cite>None</cite> to decide heuristically.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.analytics.TriangleCountPlan.ordered_count">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">ordered_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edges_sorted</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relabeling</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics.TriangleCountPlan.ordered_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>An ordered count algorithm that sorts the nodes by degree before
+execution. This has been found to give good performance. We implement the
+ordered count algorithm from: <a class="reference external" href="http://gap.cs.berkeley.edu/benchmark.html">http://gap.cs.berkeley.edu/benchmark.html</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>edges_sorted</strong> (<em>bool</em>) – Are the edges of the graph already sorted?</p></li>
+<li><p><strong>relabeling</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Should the algorithm relabel the nodes? Or <cite>None</cite> to decide heuristically.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.TriangleCountPlan.algorithm">
+<span class="sig-name descname"><span class="pre">algorithm</span></span><a class="headerlink" href="#katana.analytics.TriangleCountPlan.algorithm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.TriangleCountPlan.edges_sorted">
+<span class="sig-name descname"><span class="pre">edges_sorted</span></span><a class="headerlink" href="#katana.analytics.TriangleCountPlan.edges_sorted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Are the edges of the graph already sorted?</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics.TriangleCountPlan.relabeling">
+<span class="sig-name descname"><span class="pre">relabeling</span></span><a class="headerlink" href="#katana.analytics.TriangleCountPlan.relabeling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Should the algorithm relabel the nodes? Or <cite>None</cite> to decide heuristically.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[bool]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="citation">
+<dt class="label" id="schank"><span class="brackets">Schank</span><span class="fn-backref">(<a href="#id7">1</a>,<a href="#id8">2</a>)</span></dt>
+<dd><p>Thomas Schank. Algorithmic Aspects of Triangle-Based Network Analysis. PhD
+Thesis. Universitat Karlsruhe. 2007.</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.analytics._triangle_count._TriangleCountPlanAlgorithm">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.analytics._triangle_count.</span></span><span class="sig-name descname"><span class="pre">_TriangleCountPlanAlgorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics._triangle_count._TriangleCountPlanAlgorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._triangle_count._TriangleCountPlanAlgorithm.EdgeIteration">
+<span class="sig-name descname"><span class="pre">EdgeIteration</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#katana.analytics._triangle_count._TriangleCountPlanAlgorithm.EdgeIteration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._triangle_count._TriangleCountPlanAlgorithm.NodeIteration">
+<span class="sig-name descname"><span class="pre">NodeIteration</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#katana.analytics._triangle_count._TriangleCountPlanAlgorithm.NodeIteration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.analytics._triangle_count._TriangleCountPlanAlgorithm.OrderedCount">
+<span class="sig-name descname"><span class="pre">OrderedCount</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#katana.analytics._triangle_count._TriangleCountPlanAlgorithm.OrderedCount" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics.triangle_count">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics.</span></span><span class="sig-name descname"><span class="pre">triangle_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">pg</span></em>, <em class="sig-param"><span class="pre">plan=&lt;katana.analytics._triangle_count.TriangleCountPlan</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#katana.analytics.triangle_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count the triangles in <cite>pg</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pg</strong> (<a class="reference internal" href="katana.property_graph.html#katana.property_graph.PropertyGraph" title="katana.property_graph.PropertyGraph"><em>PropertyGraph</em></a>) – The graph to analyze.</p></li>
+<li><p><strong>plan</strong> (<a class="reference internal" href="#katana.analytics.TriangleCountPlan" title="katana.analytics.TriangleCountPlan"><em>TriangleCountPlan</em></a>) – The execution plan to use.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The number of triangles found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<span class="target" id="module-katana.analytics._wrappers"></span><section id="trivial-algorithms">
+<h3>Trivial Algorithms<a class="headerlink" href="#trivial-algorithms" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics._wrappers.find_edge_sorted_by_dest">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics._wrappers.</span></span><span class="sig-name descname"><span class="pre">find_edge_sorted_by_dest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_to_find</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics._wrappers.find_edge_sorted_by_dest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find an edge based on its incident nodes. The graph must have sorted edges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pg</strong> – The graph</p></li>
+<li><p><strong>node</strong> – The source of the edge</p></li>
+<li><p><strong>node_to_find</strong> – The target of the edge</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The edge ID or None of no such edge exists.</p>
+</dd>
+<dt class="field-odd">See</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#katana.analytics._wrappers.sort_all_edges_by_dest" title="katana.analytics._wrappers.sort_all_edges_by_dest"><code class="xref py py-func docutils literal notranslate"><span class="pre">sort_all_edges_by_dest()</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics._wrappers.sort_all_edges_by_dest">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics._wrappers.</span></span><span class="sig-name descname"><span class="pre">sort_all_edges_by_dest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics._wrappers.sort_all_edges_by_dest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sort the edges of each node by the node ID of the target. This enables the use of
+<a class="reference internal" href="#katana.analytics._wrappers.find_edge_sorted_by_dest" title="katana.analytics._wrappers.find_edge_sorted_by_dest"><code class="xref py py-func docutils literal notranslate"><span class="pre">find_edge_sorted_by_dest()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The permutation vector (mapping from old indices to the new indices) which results due to the sorting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.analytics._wrappers.sort_nodes_by_degree">
+<span class="sig-prename descclassname"><span class="pre">katana.analytics._wrappers.</span></span><span class="sig-name descname"><span class="pre">sort_nodes_by_degree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.analytics._wrappers.sort_nodes_by_degree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Relabel all nodes in the graph by sorting in the descending order by node degree.</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Katana Python</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Analytics Algorithms (katana.analytics)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#plans">Plans</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#statistics">Statistics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-katana.analytics._betweenness_centrality">Algorithms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#betweenness-centrality">Betweenness Centrality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#breadth-first-search">Breadth-first Search</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#connected-components">Connected Components</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#independent-set">Independent Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#louvain-clustering">Louvain Clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#local-clustering-coefficient">Local Clustering Coefficient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#subgraph-extraction">Subgraph Extraction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#jaccard-similarity">Jaccard Similarity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#k-core">k-Core</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#k-truss">k-Truss</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#page-rank">Page Rank</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#single-source-shortest-path">Single-Source Shortest Path</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#triangle-counting">Triangle Counting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trivial-algorithms">Trivial Algorithms</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="katana.atomic.html">Atomic Operations (katana.atomic)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.datastructures.html">Data Structures (katana.datastructures)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.loops.html">Parallel Loops (katana.loops)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.property_graph.html">Property Graphs (katana.property_graph)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.timer.html">Performance Timers (katana.timer)</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Galois Parallel Programming System</a></li>
+      <li>Next: <a href="katana.atomic.html" title="next chapter">Atomic Operations (katana.atomic)</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/katana.analytics.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

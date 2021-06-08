@@ -1,0 +1,385 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Atomic Operations (katana.atomic) &#8212; Katana Python 0.1.12.dev0+152.0.f0e084.unmerged documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Data Structures (katana.datastructures)" href="katana.datastructures.html" />
+    <link rel="prev" title="Analytics Algorithms (katana.analytics)" href="katana.analytics.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-katana.atomic">
+<span id="atomic-operations-katana-atomic"></span><h1>Atomic Operations (katana.atomic)<a class="headerlink" href="#module-katana.atomic" title="Permalink to this headline">¶</a></h1>
+<p>This module provides atomic values and atomic operations on numpy arrays.
+The atomic values are instantiated for several element types, but cannot support custom element types.
+Atomic operations on numpy arrays support integer and floating point arrays.</p>
+<p>The instantiations are:</p>
+<ul class="simple">
+<li><p><cite>np.uint64</cite> (with C element type uint64_t)</p></li>
+<li><p><cite>int</cite> (with C element type int64_t)</p></li>
+<li><p><cite>np.uint32</cite> (with C element type uint32_t)</p></li>
+<li><p><cite>np.int32</cite> (with C element type int32_t)</p></li>
+<li><p><cite>float</cite> (with C element type double)</p></li>
+<li><p><cite>np.float32</cite> (with C element type float)</p></li>
+</ul>
+<p>The instantiation is selected by indexing the type, for example <cite>GAccumulator[int]</cite> or <cite>GReduceMin[np.uint64]</cite>.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.atomic.GAccumulator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.atomic.</span></span><span class="sig-name descname"><span class="pre">GAccumulator</span></span><a class="headerlink" href="#katana.atomic.GAccumulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reducer object that can updated with new values and combines the results efficiently using addition.</p>
+<p>This class can be passed into numba compiled code and it’s methods can be used from there.</p>
+<p>(This class wraps the underlying C++ type GAccumulator.)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GAccumulator.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GAccumulator.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a GAccumulator. If <cite>v</cite> is provided and is not None, then initialize the reducer to <cite>v</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GAccumulator.get_local">
+<span class="sig-name descname"><span class="pre">get_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GAccumulator.get_local" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a sub-result of the reducers operation. This is generally the reduced value for this thread.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GAccumulator.reduce">
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GAccumulator.reduce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current value of the reducer.</p>
+<p>This must only be called from single threaded code.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GAccumulator.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GAccumulator.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the reducer to zero.</p>
+<p>This must only be called from single threaded code.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GAccumulator.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GAccumulator.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update this reducer with <cite>v</cite> performing the operation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.atomic.GAccumulator.address">
+<span class="sig-name descname"><span class="pre">address</span></span><a class="headerlink" href="#katana.atomic.GAccumulator.address" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.atomic.GReduceLogicalAnd">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.atomic.</span></span><span class="sig-name descname"><span class="pre">GReduceLogicalAnd</span></span><a class="headerlink" href="#katana.atomic.GReduceLogicalAnd" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reducer object that can updated with new values and combines the results efficiently using logical and.</p>
+<p>This class can be passed into numba compiled code and it’s methods can be used from there.</p>
+<p>(This class wraps the underlying C++ type GReduceLogicalAnd.)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceLogicalAnd.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceLogicalAnd.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a GReduceLogicalAnd. If <cite>v</cite> is provided and is not None, then initialize the reducer to <cite>v</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceLogicalAnd.get_local">
+<span class="sig-name descname"><span class="pre">get_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceLogicalAnd.get_local" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a sub-result of the reducers operation. This is generally the reduced value for this thread.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceLogicalAnd.reduce">
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceLogicalAnd.reduce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current value of the reducer.</p>
+<p>This must only be called from single threaded code.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceLogicalAnd.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceLogicalAnd.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the reducer to zero.</p>
+<p>This must only be called from single threaded code.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceLogicalAnd.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceLogicalAnd.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update this reducer with <cite>v</cite> performing the operation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.atomic.GReduceLogicalAnd.address">
+<span class="sig-name descname"><span class="pre">address</span></span><a class="headerlink" href="#katana.atomic.GReduceLogicalAnd.address" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.atomic.GReduceLogicalOr">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.atomic.</span></span><span class="sig-name descname"><span class="pre">GReduceLogicalOr</span></span><a class="headerlink" href="#katana.atomic.GReduceLogicalOr" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reducer object that can updated with new values and combines the results efficiently using logical or.</p>
+<p>This class can be passed into numba compiled code and it’s methods can be used from there.</p>
+<p>(This class wraps the underlying C++ type GReduceLogicalOr.)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceLogicalOr.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceLogicalOr.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a GReduceLogicalOr. If <cite>v</cite> is provided and is not None, then initialize the reducer to <cite>v</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceLogicalOr.get_local">
+<span class="sig-name descname"><span class="pre">get_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceLogicalOr.get_local" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a sub-result of the reducers operation. This is generally the reduced value for this thread.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceLogicalOr.reduce">
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceLogicalOr.reduce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current value of the reducer.</p>
+<p>This must only be called from single threaded code.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceLogicalOr.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceLogicalOr.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the reducer to zero.</p>
+<p>This must only be called from single threaded code.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceLogicalOr.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceLogicalOr.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update this reducer with <cite>v</cite> performing the operation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.atomic.GReduceLogicalOr.address">
+<span class="sig-name descname"><span class="pre">address</span></span><a class="headerlink" href="#katana.atomic.GReduceLogicalOr.address" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.atomic.GReduceMax">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.atomic.</span></span><span class="sig-name descname"><span class="pre">GReduceMax</span></span><a class="headerlink" href="#katana.atomic.GReduceMax" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reducer object that can updated with new values and combines the results efficiently using maximum.</p>
+<p>This class can be passed into numba compiled code and it’s methods can be used from there.</p>
+<p>(This class wraps the underlying C++ type GReduceMax.)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceMax.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceMax.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a GReduceMax. If <cite>v</cite> is provided and is not None, then initialize the reducer to <cite>v</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceMax.get_local">
+<span class="sig-name descname"><span class="pre">get_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceMax.get_local" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a sub-result of the reducers operation. This is generally the reduced value for this thread.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceMax.reduce">
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceMax.reduce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current value of the reducer.</p>
+<p>This must only be called from single threaded code.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceMax.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceMax.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the reducer to zero.</p>
+<p>This must only be called from single threaded code.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceMax.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceMax.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update this reducer with <cite>v</cite> performing the operation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.atomic.GReduceMax.address">
+<span class="sig-name descname"><span class="pre">address</span></span><a class="headerlink" href="#katana.atomic.GReduceMax.address" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="katana.atomic.GReduceMin">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">katana.atomic.</span></span><span class="sig-name descname"><span class="pre">GReduceMin</span></span><a class="headerlink" href="#katana.atomic.GReduceMin" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reducer object that can updated with new values and combines the results efficiently using minimum.</p>
+<p>This class can be passed into numba compiled code and it’s methods can be used from there.</p>
+<p>(This class wraps the underlying C++ type GReduceMin.)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceMin.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceMin.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a GReduceMin. If <cite>v</cite> is provided and is not None, then initialize the reducer to <cite>v</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceMin.get_local">
+<span class="sig-name descname"><span class="pre">get_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceMin.get_local" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a sub-result of the reducers operation. This is generally the reduced value for this thread.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceMin.reduce">
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceMin.reduce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current value of the reducer.</p>
+<p>This must only be called from single threaded code.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceMin.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceMin.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the reducer to zero.</p>
+<p>This must only be called from single threaded code.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="katana.atomic.GReduceMin.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#katana.atomic.GReduceMin.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update this reducer with <cite>v</cite> performing the operation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="katana.atomic.GReduceMin.address">
+<span class="sig-name descname"><span class="pre">address</span></span><a class="headerlink" href="#katana.atomic.GReduceMin.address" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.atomic.atomic_add">
+<span class="sig-prename descclassname"><span class="pre">katana.atomic.</span></span><span class="sig-name descname"><span class="pre">atomic_add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/katana/numba_support/numpy_atomic.html#atomic_add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#katana.atomic.atomic_add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Atomically, perform <cite>ary[i] += v</cite> and return the previous value of <cite>ary[i]</cite>.</p>
+<p>i must be a simple index for a single element of ary. Broadcasting and vector operations are not supported.</p>
+<p>This should be used from numba compiled code.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.atomic.atomic_max">
+<span class="sig-prename descclassname"><span class="pre">katana.atomic.</span></span><span class="sig-name descname"><span class="pre">atomic_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/katana/numba_support/numpy_atomic.html#atomic_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#katana.atomic.atomic_max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Atomically, perform <cite>ary[i] = max(ary[i], v)</cite> and return the previous value of <cite>ary[i]</cite>.
+This operation does not support floating-point values.</p>
+<p>i must be a simple index for a single element of ary. Broadcasting and vector operations are not supported.</p>
+<p>This should be used from numba compiled code.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.atomic.atomic_min">
+<span class="sig-prename descclassname"><span class="pre">katana.atomic.</span></span><span class="sig-name descname"><span class="pre">atomic_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/katana/numba_support/numpy_atomic.html#atomic_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#katana.atomic.atomic_min" title="Permalink to this definition">¶</a></dt>
+<dd><p>Atomically, perform <cite>ary[i] = min(ary[i], v)</cite> and return the previous value of <cite>ary[i]</cite>.
+This operation does not support floating-point values.</p>
+<p>i must be a simple index for a single element of ary. Broadcasting and vector operations are not supported.</p>
+<p>This should be used from numba compiled code.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="katana.atomic.atomic_sub">
+<span class="sig-prename descclassname"><span class="pre">katana.atomic.</span></span><span class="sig-name descname"><span class="pre">atomic_sub</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/katana/numba_support/numpy_atomic.html#atomic_sub"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#katana.atomic.atomic_sub" title="Permalink to this definition">¶</a></dt>
+<dd><p>Atomically, perform <cite>ary[i] -= v</cite> and return the previous value of <cite>ary[i]</cite>.</p>
+<p>i must be a simple index for a single element of ary. Broadcasting and vector operations are not supported.</p>
+<p>This should be used from numba compiled code.</p>
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Katana Python</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="katana.analytics.html">Analytics Algorithms (katana.analytics)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Atomic Operations (katana.atomic)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.datastructures.html">Data Structures (katana.datastructures)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.loops.html">Parallel Loops (katana.loops)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.property_graph.html">Property Graphs (katana.property_graph)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="katana.timer.html">Performance Timers (katana.timer)</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="katana.analytics.html" title="previous chapter">Analytics Algorithms (katana.analytics)</a></li>
+      <li>Next: <a href="katana.datastructures.html" title="next chapter">Data Structures (katana.datastructures)</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/katana.atomic.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
