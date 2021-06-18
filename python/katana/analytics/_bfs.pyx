@@ -67,11 +67,11 @@ cdef extern from "katana/Analytics.h" namespace "katana::analytics" nogil:
     uint32_t kDefaultBeta "katana::analytics::BfsPlan::kDefaultBeta"
 
     Result[void] Bfs(_PropertyGraph * pg,
-                     size_t start_node,
+                     uint32_t start_node,
                      string output_property_name,
                      _BfsPlan algo)
 
-    Result[void] BfsAssertValid(_PropertyGraph* pg,
+    Result[void] BfsAssertValid(_PropertyGraph* pg, uint32_t start_node,
                                 string property_name);
 
     cppclass _BfsStatistics "katana::analytics::BfsStatistics":
@@ -161,7 +161,7 @@ cdef class BfsPlan(Plan):
         return BfsPlan.make(_BfsPlan.SynchronousDirectOpt(alpha, beta))
 
 
-def bfs(PropertyGraph pg, size_t start_node, str output_property_name, BfsPlan plan = BfsPlan()):
+def bfs(PropertyGraph pg, uint32_t start_node, str output_property_name, BfsPlan plan = BfsPlan()):
     """
     Compute the Breadth-First Search levels on `pg` using `start_node` as the source. The computed levels are
     written to the property `output_property_name`.
@@ -190,7 +190,7 @@ def bfs_assert_valid(PropertyGraph pg, str property_name):
     output_property_name_bytes = bytes(property_name, "utf-8")
     output_property_name_cstr = <string>output_property_name_bytes
     with nogil:
-        handle_result_assert(BfsAssertValid(pg.underlying_property_graph(), output_property_name_cstr))
+        handle_result_assert(BfsAssertValid(pg.underlying_property_graph(), start_node, output_property_name_cstr))
 
 cdef _BfsStatistics handle_result_BfsStatistics(Result[_BfsStatistics] res) nogil except *:
     if not res.has_value():
