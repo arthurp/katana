@@ -79,7 +79,7 @@ public:
 /// The property named output_property_name is created by this function and may
 /// not exist before the call.
 KATANA_EXPORT Result<void> Bfs(
-    PropertyGraph* pg, size_t start_node,
+    PropertyGraph* pg, uint32_t start_node,
     const std::string& output_property_name, BfsPlan algo = {});
 
 /// Do a quick validation of the results of a BFS computation where the results
@@ -88,7 +88,7 @@ KATANA_EXPORT Result<void> Bfs(
 /// @return a failure if the BFS results do not pass validation or if there is a
 ///     failure during checking.
 KATANA_EXPORT Result<void> BfsAssertValid(
-    PropertyGraph* pg, const std::string& property_name);
+    PropertyGraph* pg, const uint32_t source, const std::string& property_name);
 
 /// Statistics about a graph that can be extracted from the results of BFS.
 struct KATANA_EXPORT BfsStatistics {

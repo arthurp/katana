@@ -171,13 +171,13 @@ main(int argc, char** argv) {
     break;
   }
 
-  for (auto startNode : startNodes) {
-    if (startNode >= pg->topology().num_nodes()) {
-      KATANA_LOG_FATAL("failed to set source: {}", startNode);
+  for (auto start_node : startNodes) {
+    if (start_node >= pg->topology().num_nodes()) {
+      KATANA_LOG_FATAL("failed to set source: {}", start_node);
     }
 
-    std::string node_distance_prop = "level-" + std::to_string(startNode);
-    if (auto r = Bfs(pg.get(), startNode, node_distance_prop, plan); !r) {
+    std::string node_distance_prop = "level-" + std::to_string(start_node);
+    if (auto r = Bfs(pg.get(), start_node, node_distance_prop, plan); !r) {
       KATANA_LOG_FATAL("Failed to run bfs {}", r.error());
     }
 
@@ -206,7 +206,7 @@ main(int argc, char** argv) {
             "connected",
             pg->num_nodes() - stats.n_reached_nodes);
       }
-      if (BfsAssertValid(pg.get(), node_distance_prop)) {
+      if (BfsAssertValid(pg.get(), start_node, node_distance_prop)) {
         std::cout << "Verification successful.\n";
       } else {
         KATANA_LOG_FATAL("verification failed");
@@ -216,7 +216,7 @@ main(int argc, char** argv) {
     if (output) {
       KATANA_LOG_DEBUG_ASSERT(uint64_t(results->length()) == pg->size());
 
-      std::string output_filename = "output-" + std::to_string(startNode);
+      std::string output_filename = "output-" + std::to_string(start_node);
       writeOutput(
           outputLocation, results->raw_values(), results->length(),
           output_filename);
