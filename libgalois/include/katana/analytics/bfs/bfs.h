@@ -73,7 +73,7 @@ public:
   }
 };
 
-/// Compute BFS level of nodes in the graph pg starting from start_node. The
+/// Compute BFS parent of nodes in the graph pg starting from start_node. The
 /// result is stored in a property named by output_property_name. The plan
 /// controls the algorithm and parameters used to compute the BFS.
 /// The property named output_property_name is created by this function and may
@@ -83,8 +83,7 @@ KATANA_EXPORT Result<void> Bfs(
     const std::string& output_property_name, BfsPlan algo = {});
 
 /// Do a quick validation of the results of a BFS computation where the results
-/// are stored in property_name. This function does not do an exhaustive check.
-/// The results are approximate and may have false-negatives.
+/// are stored in property_name. This function does do an exhaustive check.
 /// @return a failure if the BFS results do not pass validation or if there is a
 ///     failure during checking.
 KATANA_EXPORT Result<void> BfsAssertValid(
@@ -94,8 +93,6 @@ KATANA_EXPORT Result<void> BfsAssertValid(
 struct KATANA_EXPORT BfsStatistics {
   /// The number of nodes reachable from the source node.
   uint64_t n_reached_nodes;
-  /// The maximum distance across all nodes.
-  uint32_t max_parent;
 
   /// Print the statistics in a human readable form.
   void Print(std::ostream& os = std::cout) const;

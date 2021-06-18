@@ -589,7 +589,6 @@ katana::analytics::BfsStatistics::Compute(
   BfsImplementation::Graph graph = pg_result.value();
 
   uint32_t source_node = std::numeric_limits<uint32_t>::max();
-  GReduceMax<uint32_t> max_parent;
   GAccumulator<uint64_t> num_visited;
 
   auto max_possible_parent = graph.num_nodes();
@@ -603,7 +602,6 @@ katana::analytics::BfsStatistics::Compute(
           source_node = i;
         }
         if (my_parent <= max_possible_parent) {
-          max_parent.update(my_parent);
           num_visited += 1;
         }
       },
@@ -611,11 +609,10 @@ katana::analytics::BfsStatistics::Compute(
 
   KATANA_LOG_DEBUG_ASSERT(source_node != std::numeric_limits<uint32_t>::max());
   uint64_t total_visited_nodes = num_visited.reduce();
-  return BfsStatistics{total_visited_nodes, max_parent.reduce()};
+  return BfsStatistics{total_visited_nodes};
 }
 
 void
 katana::analytics::BfsStatistics::Print(std::ostream& os) const {
   os << "Number of reached nodes = " << n_reached_nodes << std::endl;
-  os << "Maximum parent ID = " << max_parent << std::endl;
 }
