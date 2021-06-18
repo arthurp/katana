@@ -62,19 +62,6 @@ static cll::opt<bool> persistAllDistances(
         "distances for the last source are persisted (default value false)"),
     cll::init(false));
 
-static cll::opt<BfsPlan::Algorithm> algo(
-    "algo", cll::desc("Choose an algorithm (default value SyncTile):"),
-    cll::values(
-        clEnumValN(
-            BfsPlan::kAsynchronousTile, "AsyncTile", "Asynchronous tiled"),
-        clEnumValN(BfsPlan::kAsynchronous, "Async", "Asynchronous"),
-        clEnumValN(BfsPlan::kSynchronousTile, "SyncTile", "Synchronous tiled"),
-        clEnumValN(BfsPlan::kSynchronous, "Sync", "Synchronous"),
-        clEnumValN(
-            BfsPlan::kSynchronousDirectOpt, "SyncDO",
-            "Synchronous direction optimization")),
-    cll::init(BfsPlan::kSynchronousDirectOpt));
-
 static cll::opt<unsigned int> alpha(
     "alpha", cll::desc("Alpha for direction optimization (default value: 15)"),
     cll::init(15));
@@ -119,6 +106,8 @@ main(int argc, char** argv) {
   katana::StatTimer totalTime("TimerTotal");
   totalTime.start();
 
+  BfsPlan::Algorithm algo = BfsPlan::kSynchronousDirectOpt;
+
   std::cout << "Reading from file: " << inputFile << "\n";
   std::unique_ptr<katana::PropertyGraph> pg =
       MakeFileGraph(inputFile, edge_property_name);
@@ -152,24 +141,7 @@ main(int argc, char** argv) {
   uint32_t num_sources = startNodes.size();
   std::cout << "Running BFS for " << num_sources << " sources\n";
 
-  BfsPlan plan;
-  switch (algo.getValue()) {
-  case BfsPlan::kAsynchronous:
-    plan = BfsPlan::Asynchronous();
-    break;
-  case BfsPlan::kAsynchronousTile:
-    plan = BfsPlan::AsynchronousTile();
-    break;
-  case BfsPlan::kSynchronous:
-    plan = BfsPlan::Synchronous();
-    break;
-  case BfsPlan::kSynchronousTile:
-    plan = BfsPlan::SynchronousTile();
-    break;
-  case BfsPlan::kSynchronousDirectOpt:
-    plan = BfsPlan::SynchronousDirectOpt(alpha, beta);
-    break;
-  }
+  BfsPlan plan = BfsPlan::SynchronousDirectOpt(alpha, beta);
 
   for (auto start_node : startNodes) {
     if (start_node >= pg->topology().num_nodes()) {

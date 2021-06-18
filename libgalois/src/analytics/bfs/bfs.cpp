@@ -32,15 +32,15 @@ namespace {
 
 /// The tag for the output property of BFS in TypedPropertyGraphs.
 using BfsNodeDistance = katana::PODProperty<uint32_t>;
+using BfsNodeParent = katana::PODProperty<uint32_t>;
 
 struct BfsImplementation
     : BfsSsspImplementationBase<
-          katana::TypedPropertyGraph<std::tuple<BfsNodeDistance>, std::tuple<>>,
+          katana::TypedPropertyGraph<std::tuple<BfsNodeParent>, std::tuple<>>,
           unsigned int, false> {
   BfsImplementation(ptrdiff_t edge_tile_size)
       : BfsSsspImplementationBase<
-            katana::TypedPropertyGraph<
-                std::tuple<BfsNodeDistance>, std::tuple<>>,
+            katana::TypedPropertyGraph<std::tuple<BfsNodeParent>, std::tuple<>>,
             unsigned int, false>{edge_tile_size} {}
 };
 
@@ -431,8 +431,7 @@ RunAlgo(
 
 katana::Result<void>
 BfsImpl(
-    katana::TypedPropertyGraph<std::tuple<BfsNodeDistance>, std::tuple<>>&
-        graph,
+    katana::TypedPropertyGraph<std::tuple<BfsNodeParent>, std::tuple<>>& graph,
     katana::PropertyGraph* pg, size_t start_node, BfsPlan algo) {
   if (start_node >= graph.size()) {
     return katana::ErrorCode::InvalidArgument;
@@ -457,7 +456,7 @@ BfsImpl(
   auto transpose_graph = katana::CreateTransposeGraphTopology(topology);
 
   katana::do_all(katana::iterate(graph.begin(), graph.end()), [&](auto n) {
-    graph.GetData<BfsNodeDistance>(n) = BfsImplementation::kDistanceInfinity;
+    graph.GetData<BfsNodeParent>(n) = BfsImplementation::kDistanceInfinity;
     node_data[n] = BfsImplementation::kDistanceInfinity;
   });
 
@@ -471,7 +470,7 @@ BfsImpl(
       algo.algorithm() == BfsPlan::kSynchronousDirectOpt) {
     katana::do_all(
         katana::iterate(graph.begin(), graph.end()), [&](auto& node) {
-          graph.GetData<BfsNodeDistance>(node) = node_data[node];
+          graph.GetData<BfsNodeParent>(node) = node_data[node];
         });
   }
 
@@ -484,7 +483,7 @@ katana::Result<void>
 katana::analytics::Bfs(
     PropertyGraph* pg, uint32_t start_node,
     const std::string& output_property_name, BfsPlan algo) {
-  if (auto result = ConstructNodeProperties<std::tuple<BfsNodeDistance>>(
+  if (auto result = ConstructNodeProperties<std::tuple<BfsNodeParent>>(
           pg, {output_property_name});
       !result) {
     return result.error();
@@ -542,9 +541,7 @@ katana::analytics::BfsAssertValid(
   }
 
   for (uint32_t u : graph) {
-    // TODO(lhc): should be BfsParent
-    //            (keep this since still exist variants using distance as label)
-    uint32_t u_parent = graph.GetData<BfsNodeDistance>(u);
+    uint32_t u_parent = graph.GetData<BfsNodeParent>(u);
     if ((levels[u] != BfsImplementation::kDistanceInfinity) &&
         (u_parent != BfsImplementation::kDistanceInfinity)) {
       if (u == source) {
@@ -592,23 +589,21 @@ katana::analytics::BfsStatistics::Compute(
   BfsImplementation::Graph graph = pg_result.value();
 
   uint32_t source_node = std::numeric_limits<uint32_t>::max();
-  GReduceMax<uint32_t> max_dist;
-  GAccumulator<uint64_t> sum_dist;
+  GReduceMax<uint32_t> max_parent;
   GAccumulator<uint64_t> num_visited;
 
-  auto max_possible_distance = graph.num_nodes();
+  auto max_possible_parent = graph.num_nodes();
 
   do_all(
       iterate(graph),
       [&](uint64_t i) {
-        uint32_t my_distance = graph.GetData<BfsNodeDistance>(i);
+        uint32_t my_parent = graph.GetData<BfsNodeParent>(i);
 
-        if (my_distance == 0) {
+        if (my_parent == i) {
           source_node = i;
         }
-        if (my_distance <= max_possible_distance) {
-          max_dist.update(my_distance);
-          sum_dist += my_distance;
+        if (my_parent <= max_possible_parent) {
+          max_parent.update(my_parent);
           num_visited += 1;
         }
       },
@@ -616,13 +611,11 @@ katana::analytics::BfsStatistics::Compute(
 
   KATANA_LOG_DEBUG_ASSERT(source_node != std::numeric_limits<uint32_t>::max());
   uint64_t total_visited_nodes = num_visited.reduce();
-  double average_dist = double(sum_dist.reduce()) / total_visited_nodes;
-  return BfsStatistics{total_visited_nodes, max_dist.reduce(), average_dist};
+  return BfsStatistics{total_visited_nodes, max_parent.reduce()};
 }
 
 void
 katana::analytics::BfsStatistics::Print(std::ostream& os) const {
   os << "Number of reached nodes = " << n_reached_nodes << std::endl;
-  os << "Maximum distance = " << max_distance << std::endl;
-  os << "Average distance = " << average_visited_distance << std::endl;
+  os << "Maximum parent ID = " << max_parent << std::endl;
 }

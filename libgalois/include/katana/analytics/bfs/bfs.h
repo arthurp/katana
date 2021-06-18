@@ -95,9 +95,7 @@ struct KATANA_EXPORT BfsStatistics {
   /// The number of nodes reachable from the source node.
   uint64_t n_reached_nodes;
   /// The maximum distance across all nodes.
-  uint32_t max_distance;
-  /// The average distances on visited nodes from the source node.
-  double average_visited_distance;
+  uint32_t max_parent;
 
   /// Print the statistics in a human readable form.
   void Print(std::ostream& os = std::cout) const;
