@@ -276,7 +276,7 @@ void
 SynchronousDirectOpt(
     const katana::PropertyGraph& graph,
     const katana::PropertyGraph& transpose_graph,
-    katana::LargeArray<Dist>* node_data, const Graph::Node source,
+    katana::LargeArray<uint32_t>* node_data, const Graph::Node source,
     const P& pushWrap, const uint32_t alpha, const uint32_t beta) {
   using Cont = typename std::conditional<
       CONCURRENT, katana::InsertBag<Graph::Node>,
@@ -302,7 +302,6 @@ SynchronousDirectOpt(
   Cont* frontier = new Cont();
   Cont* next_frontier = new Cont();
 
-  Dist next_level{0};
   (*node_data)[source] = 0;
 
   if (CONCURRENT) {
@@ -329,14 +328,13 @@ SynchronousDirectOpt(
       WlToBitset(*frontier, &front_bitset);
       wl_to_bitset_timer.stop();
       do {
-        ++next_level;
         old_num_work_items = work_items.reduce();
         work_items.reset();
 
         loop(
             katana::iterate(transpose_graph),
             [&](const typename Graph::Node& dst) {
-              Dist& ddata = (*node_data)[dst];
+              uint32_t& ddata = (*node_data)[dst];
               if (ddata == BfsImplementation::kDistanceInfinity) {
                 for (auto e : transpose_graph.edges(dst)) {
                   auto src = transpose_graph.GetEdgeDest(e);
@@ -362,7 +360,6 @@ SynchronousDirectOpt(
       bitset_to_wl_timer.stop();
       scout_count = 1;
     } else {
-      ++next_level;
       edges_to_check -= scout_count;
       work_items.reset();
 
@@ -371,10 +368,10 @@ SynchronousDirectOpt(
           [&](const typename Graph::Node& src) {
             for (auto e : graph.edges(src)) {
               auto dst = graph.GetEdgeDest(e);
-              Dist& ddata = (*node_data)[*dst];
+              uint32_t& ddata = (*node_data)[*dst];
               if (ddata == BfsImplementation::kDistanceInfinity) {
-                Dist old_dist = ddata;
-                if (__sync_bool_compare_and_swap(&ddata, old_dist, src)) {
+                uint32_t old_parent = ddata;
+                if (__sync_bool_compare_and_swap(&ddata, old_parent, src)) {
                   next_frontier->push(*dst);
                   auto [begin_edge, end_edge] =
                       graph.topology().edge_range(*dst);
@@ -398,7 +395,7 @@ void
 RunAlgo(
     BfsPlan algo, Graph* graph, katana::PropertyGraph* pg,
     const katana::PropertyGraph& transpose_graph,
-    katana::LargeArray<Dist>* node_data, const Graph::Node& source) {
+    katana::LargeArray<uint32_t>* node_data, const Graph::Node& source) {
   BfsImplementation impl{algo.edge_tile_size()};
   switch (algo.algorithm()) {
   case BfsPlan::kAsynchronousTile:
@@ -446,7 +443,7 @@ BfsImpl(
 
   // TODO(lhc): due to lack of in-edge iteration, manually creates a transposed graph
   const katana::GraphTopology& topology = pg->topology();
-  katana::LargeArray<Dist> node_data;
+  katana::LargeArray<uint32_t> node_data;
   bool use_block = false;
   if (use_block) {
     node_data.allocateBlocked(topology.num_nodes());
@@ -510,7 +507,7 @@ katana::analytics::BfsAssertValid(
 
   // TODO(lhc): due to lack of in-edge iteration, manually creates a transposed graph
   const katana::GraphTopology& topology = pg->topology();
-  katana::LargeArray<Dist> node_data;
+  katana::LargeArray<uint32_t> node_data;
   node_data.allocateInterleaved(topology.num_nodes());
   auto transpose_graph_topo = katana::CreateTransposeGraphTopology(topology);
   const auto& transpose_graph = *(transpose_graph_topo.value().get());
