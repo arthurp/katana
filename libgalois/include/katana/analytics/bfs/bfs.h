@@ -31,12 +31,6 @@ private:
   uint32_t beta_;
 
   BfsPlan(
-      Architecture architecture, Algorithm algorithm, ptrdiff_t edge_tile_size)
-      : Plan(architecture),
-        algorithm_(algorithm),
-        edge_tile_size_(edge_tile_size) {}
-
-  BfsPlan(
       Architecture architecture, Algorithm algorithm, ptrdiff_t edge_tile_size,
       uint32_t alpha, uint32_t beta)
       : Plan(architecture),
@@ -46,7 +40,10 @@ private:
         beta_(beta) {}
 
 public:
-  BfsPlan() : BfsPlan{kCPU, kSynchronousTile, kDefaultEdgeTileSize} {}
+  BfsPlan()
+      : BfsPlan{
+            kCPU, kSynchronousDirectOpt, kDefaultEdgeTileSize, kDefaultAlpha,
+            kDefaultBeta} {}
 
   Algorithm algorithm() const { return algorithm_; }
   ptrdiff_t edge_tile_size() const { return edge_tile_size_; }
@@ -55,17 +52,17 @@ public:
 
   static BfsPlan AsynchronousTile(
       ptrdiff_t edge_tile_size = kDefaultEdgeTileSize) {
-    return {kCPU, kAsynchronousTile, edge_tile_size};
+    return {kCPU, kAsynchronousTile, edge_tile_size, 0, 0};
   }
 
-  static BfsPlan Asynchronous() { return {kCPU, kAsynchronous, 0}; }
+  static BfsPlan Asynchronous() { return {kCPU, kAsynchronous, 0, 0, 0}; }
 
   static BfsPlan SynchronousTile(
       ptrdiff_t edge_tile_size = kDefaultEdgeTileSize) {
-    return {kCPU, kSynchronousTile, edge_tile_size};
+    return {kCPU, kSynchronousTile, edge_tile_size, 0, 0};
   }
 
-  static BfsPlan Synchronous() { return {kCPU, kSynchronous, 0}; }
+  static BfsPlan Synchronous() { return {kCPU, kSynchronous, 0, 0, 0}; }
 
   static BfsPlan SynchronousDirectOpt(
       uint32_t alpha = kDefaultAlpha, uint32_t beta = kDefaultBeta) {
@@ -87,7 +84,7 @@ KATANA_EXPORT Result<void> Bfs(
 /// @return a failure if the BFS results do not pass validation or if there is a
 ///     failure during checking.
 KATANA_EXPORT Result<void> BfsAssertValid(
-    PropertyGraph* pg, const uint32_t source, const std::string& property_name);
+    PropertyGraph* pg, uint32_t source, const std::string& property_name);
 
 /// Statistics about a graph that can be extracted from the results of BFS.
 struct KATANA_EXPORT BfsStatistics {

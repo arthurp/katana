@@ -47,7 +47,7 @@ def run_bfs(property_graph: PropertyGraph, input_args, source_node_file):
                 analytics.bfs(property_graph, int(source), property_name, plan=bfs_plan)
             check_schema(property_graph, property_name)
 
-            analytics.bfs_assert_valid(property_graph, property_name)
+            analytics.bfs_assert_valid(property_graph, int(source), property_name)
 
             stats = analytics.BfsStatistics(property_graph, property_name)
             print(f"STATS:\n{stats}")
@@ -58,7 +58,7 @@ def run_bfs(property_graph: PropertyGraph, input_args, source_node_file):
 
         check_schema(property_graph, property_name)
 
-        analytics.bfs_assert_valid(property_graph, property_name)
+        analytics.bfs_assert_valid(property_graph, start_node, property_name)
 
         stats = analytics.BfsStatistics(property_graph, property_name)
         print(f"STATS:\n{stats}")

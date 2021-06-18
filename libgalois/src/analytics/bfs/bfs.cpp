@@ -393,7 +393,7 @@ SynchronousDirectOpt(
 template <bool CONCURRENT>
 void
 RunAlgo(
-    BfsPlan algo, Graph* graph, katana::PropertyGraph* pg,
+    BfsPlan algo, [[maybe_unused]] Graph* graph, katana::PropertyGraph* pg,
     const katana::PropertyGraph& transpose_graph,
     katana::LargeArray<uint32_t>* node_data, const Graph::Node& source) {
   BfsImplementation impl{algo.edge_tile_size()};
@@ -417,7 +417,9 @@ BfsImpl(
   }
 
   if (algo.algorithm() != BfsPlan::kSynchronousDirectOpt) {
-    return katana::ErrorCode::NotImplemented;
+    return KATANA_ERROR(
+        katana::ErrorCode::NotImplemented, "Unsupported algorithm: {}",
+        algo.algorithm());
   }
 
   auto it = graph.begin();
