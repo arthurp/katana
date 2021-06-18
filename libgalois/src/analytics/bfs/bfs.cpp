@@ -398,24 +398,6 @@ RunAlgo(
     katana::LargeArray<uint32_t>* node_data, const Graph::Node& source) {
   BfsImplementation impl{algo.edge_tile_size()};
   switch (algo.algorithm()) {
-  case BfsPlan::kAsynchronousTile:
-    AsynchronousAlgo<CONCURRENT, SrcEdgeTile>(
-        *pg, source, node_data, SrcEdgeTilePushWrap{graph, impl},
-        TileRangeFn());
-    break;
-  case BfsPlan::kAsynchronous:
-    AsynchronousAlgo<CONCURRENT, UpdateRequest>(
-        *pg, source, node_data, ReqPushWrap(),
-        BfsImplementation::OutEdgeRangeFnUsingPG{pg});
-    break;
-  case BfsPlan::kSynchronousTile:
-    SynchronousAlgo<CONCURRENT, EdgeTile>(
-        graph, source, EdgeTilePushWrap{graph, impl}, TileRangeFn());
-    break;
-  case BfsPlan::kSynchronous:
-    SynchronousAlgo<CONCURRENT, Graph::Node>(
-        graph, source, NodePushWrap(), OutEdgeRangeFn{graph});
-    break;
   case BfsPlan::kSynchronousDirectOpt:
     SynchronousDirectOpt<CONCURRENT>(
         *pg, transpose_graph, node_data, source, NodePushWrap(), algo.alpha(),
@@ -432,6 +414,10 @@ BfsImpl(
     katana::PropertyGraph* pg, size_t start_node, BfsPlan algo) {
   if (start_node >= graph.size()) {
     return katana::ErrorCode::InvalidArgument;
+  }
+
+  if (algo.algorithm() != BfsPlan::kSynchronousDirectOpt) {
+    return katana::ErrorCode::NotImplemented;
   }
 
   auto it = graph.begin();
