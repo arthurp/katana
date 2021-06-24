@@ -367,9 +367,9 @@ ExtractData(std::shared_ptr<arrow::Array> array, int64_t index) {
   }
 }
 
-bool
-InRange(uint32_t id, const std::pair<uint64_t, uint64_t>& interval) {
-  return interval.first <= id && id < interval.second;
+template <typename EdgeIterRange>
+bool InRange(uint64_t id, const EdgeIterRange& range) {
+  return *range.begin() <= id && id < *range.end();
 }
 }  // namespace
 
@@ -492,12 +492,12 @@ katana::graphml::ExportGraph(
       sub_indexes[j]++;
     }
 
-    while (!InRange(i, topology.edge_range(src_node))) {
+    while (!InRange(i, topology.edges(src_node))) {
       src_node++;
     }
     std::string src = boost::lexical_cast<std::string>(src_node);
     std::string dest =
-        boost::lexical_cast<std::string>(topology.out_dests->Value(i));
+        boost::lexical_cast<std::string>(topology.edge_dest(i));
     StartGraphmlEdge(
         writer, boost::lexical_cast<std::string>(i), src, dest, labels);
 
