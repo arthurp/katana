@@ -363,6 +363,7 @@ public:
      * computation proceeds.
      */
     auto pfg_mutable = std::make_unique<katana::PropertyGraph>();
+    /*
     katana::LargeArray<uint64_t> out_indices_next;
     katana::LargeArray<uint32_t> out_dests_next;
 
@@ -387,12 +388,16 @@ public:
         !result) {
       return result.error();
     }
+    */
+
+    std::unique_ptr<katana::PropertyGraph> pfg_mutable;
 
     auto graph_result = Graph::Make(pfg);
     if (!graph_result) {
       return graph_result.error();
     }
     Graph graph_curr = graph_result.value();
+
 
     /*
     * Vertex following optimization
@@ -410,17 +415,18 @@ public:
         clusters_orig[n] = graph_curr.template GetData<CurrentCommunityId>(n);
       });
 
+      auto pfg_empty = std::make_unique<katana::PropertyGraph>();
+
       // Build new graph to remove the isolated nodes
       auto coarsened_graph_result =
           Base::template GraphCoarsening<NodeData, EdgeData, EdgeWeightType>(
-              graph_curr, pfg_mutable.get(), num_unique_clusters,
+              graph_curr, pfg_empty.get(), num_unique_clusters,
               temp_node_property_names, temp_edge_property_names);
       if (!coarsened_graph_result) {
         return coarsened_graph_result.error();
       }
 
-      auto pfg_next = std::move(coarsened_graph_result.value());
-      pfg_mutable = std::move(pfg_next);
+      pfg_mutable = std::move(coarsened_graph_result.value());
 
     } else {
       /*
@@ -429,26 +435,25 @@ public:
       katana::do_all(
           katana::iterate(graph_curr), [&](GNode n) { clusters_orig[n] = -1; });
 
-      if (auto r = Base::CreateDuplicateGraph(
-              pfg, pfg_mutable.get(), edge_weight_property_name,
-              temp_edge_property_names[0]);
-          !r) {
-        return r.error();
+      auto pfg_dup_r = Base::CreateDuplicateGraph(
+          pfg, edge_weight_property_name,
+              temp_edge_property_names[0])
+
+      if (!pfg_dup_r) {
+        return pfg_dup_r.error();
       }
 
-      if (auto result = ConstructNodeProperties<NodeData>(pfg_mutable.get());
-          !result) {
-        return result.error();
-      }
+      pfg_mutable = std::move(pfg_dup_r.value());
+
     }
+
+    KATANA_LOG_ASSERT(pfg_mutable);
 
     double prev_mod = -1;  // Previous modularity
     double curr_mod = -1;  // Current modularity
     uint32_t phase = 0;
 
-    std::unique_ptr<katana::PropertyGraph> pfg_curr =
-        std::make_unique<katana::PropertyGraph>();
-    pfg_curr = std::move(pfg_mutable);
+    std::unique_ptr<katana::PropertyGraph> pfg_curr = std::move(pfg_mutable);
     uint32_t iter = 0;
     uint64_t num_nodes_orig = clusters_orig.size();
     while (true) {
