@@ -136,14 +136,13 @@ public:
 
   bool empty() const { return num_nodes() == 0; }
 
-private:
-
-  friend class PropertyGraph;
-
+// private:
+// TODO(amber): make these methods private
   Edge* adj_data() noexcept { return &adj_indices_[0]; }
   Node* dest_data() noexcept { return &dests_[0]; }
 
 
+private:
   LargeArray<Edge> adj_indices_;
   LargeArray<Node> dests_;
 
@@ -226,18 +225,6 @@ private:
   katana::LargeArray<TypeSetID> node_type_set_id_;
   /// The edge TypeSetID for each edge in the graph
   katana::LargeArray<TypeSetID> edge_type_set_id_;
-
-  PropertyGraph(
-      std::unique_ptr<tsuba::RDGFile>&& rdg_file, tsuba::RDG&& rdg,
-      GraphTopology&& topo) noexcept
-      : rdg_(std::move(rdg)),
-        file_(std::move(rdg_file)),
-        topology_(std::move(topo)) {}
-
-  PropertyGraph(katana::GraphTopology&& topo_to_assign) noexcept :
-    rdg_(),
-    file_(),
-    topology_(std::move(topo_to_assign)) {}
 
 
   // Keep partition_metadata, master_nodes, mirror_nodes out of the public interface,
@@ -327,6 +314,18 @@ public:
   };
 
   PropertyGraph() = default;
+
+  PropertyGraph(
+      std::unique_ptr<tsuba::RDGFile>&& rdg_file, tsuba::RDG&& rdg,
+      GraphTopology&& topo) noexcept
+      : rdg_(std::move(rdg)),
+        file_(std::move(rdg_file)),
+        topology_(std::move(topo)) {}
+
+  PropertyGraph(katana::GraphTopology&& topo_to_assign) noexcept :
+    rdg_(),
+    file_(),
+    topology_(std::move(topo_to_assign)) {}
 
 
   /// Make a property graph from a constructed RDG. Take ownership of the RDG
@@ -723,7 +722,7 @@ public:
 ///
 /// Returns the permutation vector (mapping from old
 /// indices to the new indices) which results due to the sorting.
-KATANA_EXPORT Result<std::shared_ptr<arrow::UInt64Array>> SortAllEdgesByDest(
+KATANA_EXPORT Result<std::unique_ptr<katana::LargeArray<uint64_t>>> SortAllEdgesByDest(
     PropertyGraph* pg);
 
 /// FindEdgeSortedByDest finds the "node_to_find" id in the
@@ -739,6 +738,7 @@ KATANA_EXPORT GraphTopology::Edge FindEdgeSortedByDest(
 
 /// Relabel all nodes in the graph by sorting in the descending
 /// order by node degree.
+// TODO(amber): this method should return a new sorted topology
 KATANA_EXPORT Result<void> SortNodesByDegree(PropertyGraph* pg);
 
 /// Creates in-memory symmetric (or undirected) graph.
@@ -752,7 +752,7 @@ KATANA_EXPORT Result<void> SortNodesByDegree(PropertyGraph* pg);
 /// The generated symmetric graph may have duplicate edges.
 /// \param pg The original property graph
 /// \return The new symmetric property graph by adding reverse edges
-// TODO(gill): Add edge properties for the new reversed edges.
+// TODO(amber): this function should return a new topology
 KATANA_EXPORT Result<std::unique_ptr<katana::PropertyGraph>>
 CreateSymmetricGraph(PropertyGraph* pg);
 
@@ -767,7 +767,7 @@ CreateSymmetricGraph(PropertyGraph* pg);
 /// \param topology The original property graph topology
 /// \return The new transposed property graph by reversing the edges
 // TODO(lhc): hack for bfs-direct-opt
-// TODO(gill): Add tranposed edge properties as well.
+// TODO(amber): this function should return a new topology
 KATANA_EXPORT Result<std::unique_ptr<PropertyGraph>>
 CreateTransposeGraphTopology(const GraphTopology& topology);
 

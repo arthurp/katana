@@ -419,14 +419,13 @@ transform(
   return d_first + std::distance(first, last);
 }
 
-template <typename ForwardIter, 
-         typename T = typename std::iterator_traits<ForwardIter>::value_type,
+template <typename ForwardIt, 
+         typename T = typename std::iterator_traits<ForwardIt>::value_type,
          typename __Unused = std::enable_if_t<std::is_arithmetic<T>::value> >
 void 
-iota(const ForwardIter& first, const ForwardIter& last, const T& init_val) {
-  using diff_type = typename std::iterator_traits<InputIt>::difference_type;
-
-  using value_type = typename std::iterator_traits<ForwardIter>::value_type;
+iota(const ForwardIt& first, const ForwardIt& last, const T& init_val) {
+  using diff_type = typename std::iterator_traits<ForwardIt>::difference_type;
+  using value_type = typename std::iterator_traits<ForwardIt>::value_type;
   static_assert(std::is_convertible_v<T, value_type>, "Can't convert init_value to iterator's value_type");
   static_assert(std::is_arithmetic_v<T> && std::is_arithmetic_v<value_type>, "iota only supported for numeric types");
 

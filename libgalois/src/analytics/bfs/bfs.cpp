@@ -370,9 +370,9 @@ SynchronousDirectOpt(
                 GNode old_parent = ddata;
                 if (__sync_bool_compare_and_swap(&ddata, old_parent, src)) {
                   next_frontier->push(*dst);
-                  auto [begin_edge, end_edge] =
-                      graph.topology().edge_range(*dst);
-                  work_items += end_edge - begin_edge;
+                  auto e_range =
+                      graph.topology().edges(*dst);
+                  work_items += std::distance(e_range.begin(), e_range.end());
                 }
               }
             }
