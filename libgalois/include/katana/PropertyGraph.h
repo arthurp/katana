@@ -18,11 +18,12 @@
 
 namespace katana {
 
-
-// TODO(amber): find a better place to put this 
-template <typename T, typename __Unused=std::enable_if_t<std::is_arithmetic<T>::value>>
-auto ProjectAsArrowArray(const T* buf, const size_t len) noexcept {
-
+// TODO(amber): find a better place to put this
+template <
+    typename T,
+    typename __Unused = std::enable_if_t<std::is_arithmetic<T>::value>>
+auto
+ProjectAsArrowArray(const T* buf, const size_t len) noexcept {
   using ArrowDataType = typename arrow::CTypeTraits<T>::ArrowType;
   using ArrowArrayType = arrow::NumericArray<ArrowDataType>;
   return std::make_shared<ArrowArrayType>(len, arrow::Buffer::Wrap(buf, len));
@@ -51,20 +52,17 @@ public:
 
   GraphTopology(
       LargeArray<Edge>&& adj_indices, LargeArray<Node>&& dests) noexcept
-      : adj_indices_(std::move(adj_indices)),
-        dests_(std::move(dests)) {}
-        // out_indices(LargeToArrowArray(adj_indices_)),
-        // out_dests(LargeToArrowArray(dests_)) {}
+      : adj_indices_(std::move(adj_indices)), dests_(std::move(dests)) {}
+  // out_indices(LargeToArrowArray(adj_indices_)),
+  // out_dests(LargeToArrowArray(dests_)) {}
 
-  static GraphTopology&& Copy(
-      const GraphTopology& that) noexcept;
+  static GraphTopology&& Copy(const GraphTopology& that) noexcept;
 
-  GraphTopology(GraphTopology&& that):
-    adj_indices_(std::move(that.adj_indices_)),
-    dests_(std::move(that.dests_))
-  {}
+  GraphTopology(GraphTopology&& that)
+      : adj_indices_(std::move(that.adj_indices_)),
+        dests_(std::move(that.dests_)) {}
 
-  GraphTopology& operator = (GraphTopology&& that) {
+  GraphTopology& operator=(GraphTopology&& that) {
     adj_indices_ = std::move(that.adj_indices_);
     dests_ = std::move(that.dests_);
     return *this;
@@ -79,23 +77,28 @@ public:
   const Node* dest_data() const noexcept { return &dests_[0]; }
 
   bool Equals(const GraphTopology& that) const {
-    if (this == &that) { return true; }
-    if (this->num_nodes() != that.num_nodes()) { return false; }
-    if (this->num_edges() != that.num_edges()) { return false; }
+    if (this == &that) {
+      return true;
+    }
+    if (this->num_nodes() != that.num_nodes()) {
+      return false;
+    }
+    if (this->num_edges() != that.num_edges()) {
+      return false;
+    }
 
-    return this->adj_indices_ == that.adj_indices_ && 
+    return this->adj_indices_ == that.adj_indices_ &&
            this->dests_ == that.dests_;
   }
 
   // Edge accessors
 
-
   edge_iterator edge_begin(Node node) const noexcept {
-    return edge_iterator{ node > 0 ? adj_indices_[node - 1] : 0 };
+    return edge_iterator{node > 0 ? adj_indices_[node - 1] : 0};
   }
 
   edge_iterator edge_end(Node node) const noexcept {
-    return edge_iterator{ adj_indices_[node] };
+    return edge_iterator{adj_indices_[node]};
   }
 
   /// Gets the edge range of some node.
@@ -136,17 +139,16 @@ public:
 
   bool empty() const { return num_nodes() == 0; }
 
-// private:
-// TODO(amber): make these methods private
+  // private:
+  // TODO(amber): make these methods private
   Edge* adj_data() noexcept { return &adj_indices_[0]; }
   Node* dest_data() noexcept { return &dests_[0]; }
-
 
 private:
   LargeArray<Edge> adj_indices_;
   LargeArray<Node> dests_;
 
-// public:
+  // public:
   // TODO(amber): make these private in the near future. No other class should
   // access these directly. Instead provide access methods. Also, can't move these
   // up due to member declaration & initialization order. out_indices depends on adj_indices_
@@ -225,7 +227,6 @@ private:
   katana::LargeArray<TypeSetID> node_type_set_id_;
   /// The edge TypeSetID for each edge in the graph
   katana::LargeArray<TypeSetID> edge_type_set_id_;
-
 
   // Keep partition_metadata, master_nodes, mirror_nodes out of the public interface,
   // while allowing Distribution to read/write it for RDG
@@ -322,11 +323,8 @@ public:
         file_(std::move(rdg_file)),
         topology_(std::move(topo)) {}
 
-  PropertyGraph(katana::GraphTopology&& topo_to_assign) noexcept :
-    rdg_(),
-    file_(),
-    topology_(std::move(topo_to_assign)) {}
-
+  PropertyGraph(katana::GraphTopology&& topo_to_assign) noexcept
+      : rdg_(), file_(), topology_(std::move(topo_to_assign)) {}
 
   /// Make a property graph from a constructed RDG. Take ownership of the RDG
   /// and its underlying resources.
@@ -337,9 +335,10 @@ public:
   static Result<std::unique_ptr<PropertyGraph>> Make(
       const std::string& rdg_name,
       const tsuba::RDGLoadOptions& opts = tsuba::RDGLoadOptions());
- 
+
   /// Make a property graph from topology
-  static Result<std::unique_ptr<PropertyGraph>> Make(GraphTopology&& topo_to_assign);
+  static Result<std::unique_ptr<PropertyGraph>> Make(
+      GraphTopology&& topo_to_assign);
 
   /// \return A copy of this with the same set of properties. The copy shares no
   ///       state with this.
@@ -623,9 +622,7 @@ public:
     return rdg_.MarkEdgePropertiesPersistent(persist_edge_props);
   }
 
-  const GraphTopology& topology() const noexcept {
-    return topology_;
-  }
+  const GraphTopology& topology() const noexcept { return topology_; }
 
   /// Add Node properties that do not exist in the current graph
   Result<void> AddNodeProperties(const std::shared_ptr<arrow::Table>& props);
@@ -722,8 +719,8 @@ public:
 ///
 /// Returns the permutation vector (mapping from old
 /// indices to the new indices) which results due to the sorting.
-KATANA_EXPORT Result<std::unique_ptr<katana::LargeArray<uint64_t>>> SortAllEdgesByDest(
-    PropertyGraph* pg);
+KATANA_EXPORT Result<std::unique_ptr<katana::LargeArray<uint64_t>>>
+SortAllEdgesByDest(PropertyGraph* pg);
 
 /// FindEdgeSortedByDest finds the "node_to_find" id in the
 /// sorted edgelist of the "node" using binary search.

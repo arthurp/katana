@@ -151,8 +151,7 @@ struct KATANA_EXPORT GraphComponents {
   GraphTopology topology;
 
   GraphComponents(
-      GraphComponent nodes_, GraphComponent edges_,
-      GraphTopology&& topology_)
+      GraphComponent nodes_, GraphComponent edges_, GraphTopology&& topology_)
       : nodes(std::move(nodes_)),
         edges(std::move(edges_)),
         topology(std::move(topology_)) {}
@@ -165,8 +164,10 @@ struct KATANA_EXPORT GraphComponents {
     std::cout << edges.properties->ToString() << "\n";
     std::cout << edges.labels->ToString() << "\n";
 
-    auto indices_array = katana::ProjectAsArrowArray(topology.adj_data(), topology.num_nodes()); 
-    auto dests_array = katana::ProjectAsArrowArray(topology.dest_data(), topology.num_edges()); 
+    auto indices_array =
+        katana::ProjectAsArrowArray(topology.adj_data(), topology.num_nodes());
+    auto dests_array =
+        katana::ProjectAsArrowArray(topology.dest_data(), topology.num_edges());
 
     std::cout << indices_array->ToString() << "\n";
     std::cout << dests_array->ToString() << "\n";
@@ -228,7 +229,7 @@ private:
   GraphComponent BuildFinalEdges(bool verbose);
 };
 
-Result<std::unique_ptr<katana::PropertyGraph>>
+KATANA_EXPORT Result<std::unique_ptr<katana::PropertyGraph>>
 ConvertToPropertyGraph(GraphComponents&& graph_comps);
 
 KATANA_EXPORT Result<void> WritePropertyGraph(

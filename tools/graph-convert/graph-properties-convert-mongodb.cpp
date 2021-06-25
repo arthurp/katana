@@ -1110,7 +1110,7 @@ katana::GenerateMappingMongoDB(
   mongoc_cleanup();
 }
 
-katana::GraphComponents
+katana::GraphComponents&&
 katana::ConvertMongoDB(
     const std::string& db_name, const std::string& mapping, size_t chunk_size) {
   const char* uri_string = "mongodb://localhost:27017";
@@ -1157,6 +1157,6 @@ katana::ConvertMongoDB(
   if (auto r = builder.Finish(); !r) {
     KATANA_LOG_FATAL("Failed to construct graph: {}", r.error());
   } else {
-    return r.value();
+    return std::move(r.value());
   }
 }

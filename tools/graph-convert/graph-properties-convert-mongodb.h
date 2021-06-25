@@ -15,7 +15,7 @@ void HandleEdgeDocumentMongoDB(
     PropertyGraphBuilder*, const bson_t* doc,
     const std::string& collection_name);
 
-GraphComponents ConvertMongoDB(
+GraphComponents&& ConvertMongoDB(
     const std::string& db_name, const std::string& mapping,
     const size_t chunk_size);
 void GenerateMappingMongoDB(

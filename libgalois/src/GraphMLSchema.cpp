@@ -368,7 +368,8 @@ ExtractData(std::shared_ptr<arrow::Array> array, int64_t index) {
 }
 
 template <typename EdgeIterRange>
-bool InRange(uint64_t id, const EdgeIterRange& range) {
+bool
+InRange(uint64_t id, const EdgeIterRange& range) {
   return *range.begin() <= id && id < *range.end();
 }
 }  // namespace
@@ -496,8 +497,7 @@ katana::graphml::ExportGraph(
       src_node++;
     }
     std::string src = boost::lexical_cast<std::string>(src_node);
-    std::string dest =
-        boost::lexical_cast<std::string>(topology.edge_dest(i));
+    std::string dest = boost::lexical_cast<std::string>(topology.edge_dest(i));
     StartGraphmlEdge(
         writer, boost::lexical_cast<std::string>(i), src, dest, labels);
 

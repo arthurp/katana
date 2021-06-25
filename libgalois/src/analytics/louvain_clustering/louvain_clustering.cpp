@@ -362,7 +362,6 @@ public:
      * Construct temp property graph. This graph gets coarsened as the
      * computation proceeds.
      */
-    auto pfg_mutable = std::make_unique<katana::PropertyGraph>();
     /*
     katana::LargeArray<uint64_t> out_indices_next;
     katana::LargeArray<uint32_t> out_dests_next;
@@ -381,14 +380,15 @@ public:
         !result) {
       return result.error();
     }
-    std::vector<std::string> temp_edge_property_names = {
-        "_katana_temporary_property_" + edge_weight_property_name};
     if (auto result = ConstructEdgeProperties<EdgeData>(
             pfg_mutable.get(), temp_edge_property_names);
         !result) {
       return result.error();
     }
     */
+
+    std::vector<std::string> temp_edge_property_names = {
+        "_katana_temporary_property_" + edge_weight_property_name};
 
     std::unique_ptr<katana::PropertyGraph> pfg_mutable;
 
@@ -397,7 +397,6 @@ public:
       return graph_result.error();
     }
     Graph graph_curr = graph_result.value();
-
 
     /*
     * Vertex following optimization
@@ -435,16 +434,14 @@ public:
       katana::do_all(
           katana::iterate(graph_curr), [&](GNode n) { clusters_orig[n] = -1; });
 
-      auto pfg_dup_r = Base::CreateDuplicateGraph(
-          pfg, edge_weight_property_name,
-              temp_edge_property_names[0])
+      auto pfg_dup_r = Base::template CreateDuplicateGraph<NodeData>(
+          pfg, edge_weight_property_name, temp_edge_property_names[0]);
 
       if (!pfg_dup_r) {
         return pfg_dup_r.error();
       }
 
       pfg_mutable = std::move(pfg_dup_r.value());
-
     }
 
     KATANA_LOG_ASSERT(pfg_mutable);

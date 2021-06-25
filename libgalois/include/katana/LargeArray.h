@@ -207,17 +207,22 @@ public:
   const_pointer data() const { return data_; }
   pointer data() { return data_; }
 
-
   // equal_to operator
-  friend bool operator == (const LargeArray& left, const LargeArray& right) {
-    if (&left == &right) { return true; }
-    if (left.size() != right.size()) { return false; }
+  friend bool operator==(const LargeArray& left, const LargeArray& right) {
+    if (&left == &right) {
+      return true;
+    }
+    if (left.size() != right.size()) {
+      return false;
+    }
     // if sizes are equal and data pointers are same then arrays are equal
-    if(left.data() == right.data()) { return true; }
+    if (left.data() == right.data()) {
+      return true;
+    }
 
     for (size_t i = 0, sz = left.size(); i < sz; ++i) {
       if (left[i] != right[i]) {
-        return false; 
+        return false;
       }
     }
 

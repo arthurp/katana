@@ -27,7 +27,7 @@ GetGraphSize(uint64_t num_nodes, uint64_t num_edges) {
 
 [[maybe_unused]] bool
 CheckTopology(
-    const uint64_t* out_indices, const uint64_t num_nodes, 
+    const uint64_t* out_indices, const uint64_t num_nodes,
     const uint32_t* out_dests, const uint64_t num_edges) {
   bool has_bad_adj = false;
 
@@ -92,7 +92,8 @@ MapTopology(const tsuba::FileView& file_view) {
   }
 
   const uint64_t* out_indices = &data[4];
-  const uint32_t* out_dests = reinterpret_cast<const uint32_t*>(out_indices + num_nodes);
+  const uint32_t* out_dests =
+      reinterpret_cast<const uint32_t*>(out_indices + num_nodes);
 
   KATANA_LOG_DEBUG_ASSERT(
       CheckTopology(out_indices, num_nodes, out_dests, num_edges));
@@ -135,7 +136,6 @@ WriteTopology(const katana::GraphTopology& topology) {
   }
   return std::unique_ptr<tsuba::FileFrame>(std::move(ff));
 }
-
 
 /// Assumes all boolean or uint8 properties are types
 katana::Result<katana::LargeArray<katana::PropertyGraph::TypeSetID>>
@@ -334,10 +334,9 @@ katana::GraphTopology::GraphTopology(
 katana::GraphTopology&&
 katana::GraphTopology::Copy(const GraphTopology& that) noexcept {
   return std::move(katana::GraphTopology(
-      that.adj_indices_.data(), that.adj_indices_.size(), 
-      that.dests_.data(), that.dests_.size()));
+      that.adj_indices_.data(), that.adj_indices_.size(), that.dests_.data(),
+      that.dests_.size()));
 }
-
 
 katana::Result<std::unique_ptr<katana::PropertyGraph>>
 katana::PropertyGraph::Make(
@@ -398,7 +397,6 @@ katana::PropertyGraph::Copy(
 
   return Make(rdg_dir(), opts);
 }
-
 
 katana::Result<void>
 katana::PropertyGraph::Validate() {
@@ -761,7 +759,6 @@ katana::PropertyGraph::InformPath(const std::string& input_path) {
 
 katana::Result<std::unique_ptr<katana::LargeArray<uint64_t>>>
 katana::SortAllEdgesByDest(katana::PropertyGraph* pg) {
-
   /*
   auto view_result_dests =
       katana::ConstructPropertyView<katana::UInt32Property>(
@@ -791,9 +788,10 @@ katana::SortAllEdgesByDest(katana::PropertyGraph* pg) {
   // topology instead of modifying an existing one. The const_cast will go away
   auto& topo = const_cast<GraphTopology&>(pg->topology());
 
-  auto permutation_vec = std::make_unique<katana::LargeArray<uint64_t> >();
+  auto permutation_vec = std::make_unique<katana::LargeArray<uint64_t>>();
   permutation_vec->allocateInterleaved(topo.num_edges());
-  katana::ParallelSTL::iota(permutation_vec->begin(), permutation_vec->end(), uint64_t{0});
+  katana::ParallelSTL::iota(
+      permutation_vec->begin(), permutation_vec->end(), uint64_t{0});
 
   auto* out_dests_data = topo.dest_data();
   auto* permutation_vec_data = permutation_vec->data();
@@ -808,15 +806,16 @@ katana::SortAllEdgesByDest(katana::PropertyGraph* pg) {
         const auto e_beg = pg->topology().edge_begin(n);
         const auto e_end = pg->topology().edge_end(n);
         std::sort(
-            permutation_vec_data + *e_beg,
-            permutation_vec_data + *e_end, comparator);
+            permutation_vec_data + *e_beg, permutation_vec_data + *e_end,
+            comparator);
         std::sort(
-            &out_dests_data[0] + *e_beg,
-            &out_dests_data[0] + *e_end, comparator);
+            &out_dests_data[0] + *e_beg, &out_dests_data[0] + *e_end,
+            comparator);
       },
       katana::steal());
 
-  return std::unique_ptr<katana::LargeArray<uint64_t> >(std::move(permutation_vec));
+  return std::unique_ptr<katana::LargeArray<uint64_t>>(
+      std::move(permutation_vec));
 }
 
 // TODO(amber): make this a method of a sorted topology class in the near future
@@ -825,7 +824,6 @@ katana::GraphTopology::Edge
 katana::FindEdgeSortedByDest(
     const PropertyGraph* graph, const GraphTopology::Node src,
     const GraphTopology::Node dst) {
-
   using edge_iterator = GraphTopology::edge_iterator;
 
   const auto& topo = graph->topology();
@@ -835,16 +833,15 @@ katana::FindEdgeSortedByDest(
   constexpr int BINARY_SEARCH_THRESHOLD = 100;
 
   if (std::distance(e_beg, e_end) < BINARY_SEARCH_THRESHOLD) {
-    auto iter = std::find_if(e_beg, e_end, 
-        [&](const GraphTopology::Edge& e) {
-          return topo.edge_dest(e) == dst;
-        });
+    auto iter = std::find_if(e_beg, e_end, [&](const GraphTopology::Edge& e) {
+      return topo.edge_dest(e) == dst;
+    });
 
     return *iter;
 
   } else {
-
-    auto comparator = [&] (const GraphTopology::Edge& e, const GraphTopology::Node& d) {
+    auto comparator = [&](const GraphTopology::Edge& e,
+                          const GraphTopology::Node& d) {
       return topo.edge_dest(e) < d;
     };
 
@@ -857,7 +854,6 @@ katana::FindEdgeSortedByDest(
 // TODO(amber): this method should return a new sorted topology
 katana::Result<void>
 katana::SortNodesByDegree(katana::PropertyGraph* pg) {
-
   // TODO(amber): remove this const_cast
   auto& topo = const_cast<GraphTopology&>(pg->topology());
 
@@ -975,7 +971,8 @@ katana::CreateSymmetricGraph(katana::PropertyGraph* pg) {
       katana::steal());
 
   // Compute prefix sum
-  katana::ParallelSTL::partial_sum(out_indices.begin(), out_indices.end(), out_indices.begin());
+  katana::ParallelSTL::partial_sum(
+      out_indices.begin(), out_indices.end(), out_indices.begin());
 
   uint64_t num_nodes_symmetric = topology.num_nodes();
   uint64_t num_edges_symmetric = out_indices[num_nodes_symmetric - 1];
@@ -994,10 +991,9 @@ katana::CreateSymmetricGraph(katana::PropertyGraph* pg) {
   katana::do_all(
       katana::iterate(uint64_t{0}, topology.num_nodes()),
       [&](uint64_t src) {
-
         // get all outgoing edges (excluding self edges) of a particular
         // node and add reverse edges.
-        for(GraphTopology::Edge e: topology.edges(src)) {
+        for (GraphTopology::Edge e : topology.edges(src)) {
           // e = start index into edge array for a particular node
           // destination node
           auto dest = topology.edge_dest(e);
@@ -1053,7 +1049,8 @@ katana::CreateTransposeGraphTopology(const GraphTopology& topology) {
       katana::no_stats());
 
   // Prefix sum calculation of the edge index array
-  katana::ParallelSTL::partial_sum(out_indices.begin(), out_indices.end(), out_indices.begin());
+  katana::ParallelSTL::partial_sum(
+      out_indices.begin(), out_indices.end(), out_indices.begin());
 
   katana::LargeArray<uint64_t> out_dests_offset;
   out_dests_offset.allocateInterleaved(topology.num_nodes());
@@ -1069,10 +1066,9 @@ katana::CreateTransposeGraphTopology(const GraphTopology& topology) {
   katana::do_all(
       katana::iterate(uint64_t{0}, topology.num_nodes()),
       [&](uint64_t src) {
-
         // get all outgoing edges of a particular
         // node and reverse the edges.
-        for(GraphTopology::Edge e: topology.edges(src)) {
+        for (GraphTopology::Edge e : topology.edges(src)) {
           // e = start index into edge array for a particular node
           // Destination node
           auto dest = topology.edge_dest(e);
@@ -1086,7 +1082,8 @@ katana::CreateTransposeGraphTopology(const GraphTopology& topology) {
       katana::no_stats());
 
   GraphTopology transpose_topo{std::move(out_indices), std::move(out_dests)};
-  auto transpose_pg = std::make_unique<katana::PropertyGraph>(std::move(transpose_topo));
+  auto transpose_pg =
+      std::make_unique<katana::PropertyGraph>(std::move(transpose_topo));
 
   return std::unique_ptr<PropertyGraph>(std::move(transpose_pg));
 }

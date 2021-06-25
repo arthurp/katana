@@ -1750,9 +1750,8 @@ katana::PropertyGraphBuilder::Finish(bool verbose) {
 
   // build topology
   katana::GraphTopology pg_topo(
-      topology_builder_.out_indices.data(), 
-      topology_builder_.out_indices.size(), 
-      topology_builder_.out_dests.data(), 
+      topology_builder_.out_indices.data(),
+      topology_builder_.out_indices.size(), topology_builder_.out_dests.data(),
       topology_builder_.out_dests.size());
 
   if (verbose) {
@@ -1767,7 +1766,8 @@ katana::PropertyGraphBuilder::Finish(bool verbose) {
     std::cout << "Edge Types: " << edges_tables.labels->num_columns() << "\n";
   }
 
-  return katana::GraphComponents{nodes_tables, edges_tables, std::move(pg_topo)};
+  return katana::GraphComponents{
+      nodes_tables, edges_tables, std::move(pg_topo)};
 }
 
 // NB: is_list is always initialized
@@ -1832,9 +1832,8 @@ ImportData::ValueFromArrowScalar(std::shared_ptr<arrow::Scalar> scalar) {
   }
 }
 
-
 katana::Result<std::unique_ptr<katana::PropertyGraph>>
-ConvertToPropertyGraph(katana::GraphComponents&& graph_comps) {
+katana::ConvertToPropertyGraph(katana::GraphComponents&& graph_comps) {
   auto pg_result = katana::PropertyGraph::Make(std::move(graph_comps.topology));
   if (!pg_result) {
     return pg_result.error().WithContext("adding topology");
