@@ -29,6 +29,10 @@ ProjectAsArrowArray(const T* buf, const size_t len) noexcept {
   return std::make_shared<ArrowArrayType>(len, arrow::Buffer::Wrap(buf, len));
 }
 
+/// Provides write access to private data of GraphTopology. 
+/// WARNING: Dangerous
+class KATANA_EXPORT GraphTopologyAccess;
+
 /// A graph topology represents the adjacency information for a graph in CSR
 /// format.
 class KATANA_EXPORT GraphTopology {
@@ -139,21 +143,43 @@ public:
 
   bool empty() const { return num_nodes() == 0; }
 
-  // private:
-  // TODO(amber): make these methods private
+
+private:
+  friend class GraphTopologyAccess;
+
   Edge* adj_data() noexcept { return &adj_indices_[0]; }
   Node* dest_data() noexcept { return &dests_[0]; }
 
-private:
   LargeArray<Edge> adj_indices_;
   LargeArray<Node> dests_;
 
-  // public:
-  // TODO(amber): make these private in the near future. No other class should
-  // access these directly. Instead provide access methods. Also, can't move these
-  // up due to member declaration & initialization order. out_indices depends on adj_indices_
-  // std::shared_ptr<arrow::UInt64Array> out_indices;
-  // std::shared_ptr<arrow::UInt32Array> out_dests;
+};
+
+class GraphTopologyAccess {
+public:
+
+  GraphTopologyAccess(GraphTopology* topo) noexcept:
+    topo_(topo)
+  {
+    KATANA_LOG_DEBUG_ASSERT(topo);
+  }
+
+  GraphTopology::Edge* adj_data() noexcept {
+    return topo_->adj_data();
+  }
+
+  GraphTopology::Node* dest_data() noexcept {
+    return topo_->dest_data();
+  }
+
+  size_t adj_size() const noexcept { return topo_->adj_indices_.size(); }
+  size_t dest_size() const noexcept { return topo_->dests_.size(); }
+
+  GraphTopology& topology() noexcept { return *topo_; }
+  const GraphTopology& topology() const noexcept { return *topo_; }
+
+private:
+  GraphTopology* topo_;
 };
 
 /// A property graph is a graph that has properties associated with its nodes
