@@ -448,7 +448,7 @@ struct ClusteringImplementationBase {
       const std::string& new_edge_property_name) {
     const katana::GraphTopology& topology_from = pfg_from->topology();
 
-    katana::GraphTopology&& topo_copy = GraphTopology::Copy(topology_from);
+    katana::GraphTopology topo_copy = GraphTopology::Copy(topology_from);
 
     auto pfg_to_res = katana::PropertyGraph::Make(std::move(topo_copy));
     if (!pfg_to_res) {
@@ -459,8 +459,10 @@ struct ClusteringImplementationBase {
         std::move(pfg_to_res.value());
 
     // Remove the existing edge property
-    if (auto r = pfg_to->RemoveEdgeProperty(new_edge_property_name); !r) {
-      return r.error();
+    if (pfg_to->HasEdgeProperty(new_edge_property_name)) {
+      if (auto r = pfg_to->RemoveEdgeProperty(new_edge_property_name); !r) {
+        return r.error();
+      }
     }
     // Copy edge properties
     using ArrowType = typename arrow::CTypeTraits<EdgeTy>::ArrowType;
@@ -580,13 +582,17 @@ struct ClusteringImplementationBase {
 
     // Remove all the existing node/edge properties
     for (auto property : temp_node_property_names) {
-      if (auto r = pfg_mutable->RemoveNodeProperty(property); !r) {
-        return r.error();
+      if (pfg_mutable->HasNodeProperty(property)) {
+        if (auto r = pfg_mutable->RemoveNodeProperty(property); !r) {
+          return r.error();
+        }
       }
     }
     for (auto property : temp_edge_property_names) {
-      if (auto r = pfg_mutable->RemoveEdgeProperty(property); !r) {
-        return r.error();
+      if (pfg_mutable->HasEdgeProperty(property)) {
+        if (auto r = pfg_mutable->RemoveEdgeProperty(property); !r) {
+          return r.error();
+        }
       }
     }
 
