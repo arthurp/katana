@@ -35,7 +35,7 @@ namespace internal {
 template <typename GraphTy>
 inline GraphTopology::edge_iterator
 edge_begin(GraphTy& graph, uint32_t N) {
-  graph.topology().edge_begin(N);
+  return graph.topology().edge_begin(N);
 }
 
 /**
