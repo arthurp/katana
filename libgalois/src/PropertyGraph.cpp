@@ -759,30 +759,6 @@ katana::PropertyGraph::InformPath(const std::string& input_path) {
 
 katana::Result<std::unique_ptr<katana::LargeArray<uint64_t>>>
 katana::SortAllEdgesByDest(katana::PropertyGraph* pg) {
-  /*
-  auto view_result_dests =
-      katana::ConstructPropertyView<katana::UInt32Property>(
-          pg->topology().out_dests.get());
-  if (!view_result_dests) {
-    return view_result_dests.error();
-  }
-
-  auto out_dests_view = std::move(view_result_dests.value());
-
-  arrow::UInt64Builder permutation_vec_builder;
-  if (auto r = permutation_vec_builder.Resize(pg->topology().num_edges());
-      !r.ok()) {
-    return ErrorCode::ArrowError;
-  }
-  // Getting a mutable reference to an index is definitely allowed. It's
-  // less clear if taking a pointer to it and using offsets is officially
-  // supported. But, ArrayBuilder::Advance explicitly mentions memcpy into the
-  // internal buffer. So I think it actually is.
-  uint64_t* permutation_vec_data = &permutation_vec_builder[0];
-  std::iota(
-      permutation_vec_data,
-      permutation_vec_data + permutation_vec_builder.capacity(), uint64_t{0});
-  */
 
   // TODO(amber): This function will soon change so that it produces a new sorted
   // topology instead of modifying an existing one. The const_cast will go away
@@ -793,7 +769,9 @@ katana::SortAllEdgesByDest(katana::PropertyGraph* pg) {
   katana::ParallelSTL::iota(
       permutation_vec->begin(), permutation_vec->end(), uint64_t{0});
 
-  auto* out_dests_data = topo.dest_data();
+  GraphTopologyAccess gta{&topo};
+
+  auto* out_dests_data = gta.dest_data();
   auto* permutation_vec_data = permutation_vec->data();
 
   auto comparator = [&](uint64_t a, uint64_t b) {
@@ -893,8 +871,10 @@ katana::SortNodesByDegree(katana::PropertyGraph* pg) {
   katana::LargeArray<uint32_t> new_out_dest;
   new_out_dest.allocateInterleaved(num_edges);
 
-  auto* out_dests_data = topo.dest_data();
-  auto* out_indices_data = topo.adj_data();
+  GraphTopologyAccess gta{&topo};
+
+  auto* out_dests_data = gta.dest_data();
+  auto* out_indices_data = gta.adj_data();
 
   katana::do_all(
       katana::iterate(uint64_t{0}, num_nodes),

@@ -1147,7 +1147,7 @@ VerifyChunksSet(const katana::GraphComponents& graph) {
 }
 
 #if defined(KATANA_MONGOC_FOUND)
-katana::GraphComponents&&
+katana::GraphComponents
 GenerateAndConvertBson(size_t chunk_size) {
   katana::PropertyGraphBuilder builder{chunk_size};
 
@@ -1280,7 +1280,7 @@ main(int argc, char** argv) {
     break;
 #if defined(KATANA_MONGOC_FOUND)
   case katana::SourceDatabase::kMongodb:
-    graph = std::move(GenerateAndConvertBson(chunk_size));
+    graph = GenerateAndConvertBson(chunk_size);
     break;
 #endif
   default:
