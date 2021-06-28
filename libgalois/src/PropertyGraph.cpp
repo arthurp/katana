@@ -333,9 +333,9 @@ katana::GraphTopology::GraphTopology(
 
 katana::GraphTopology
 katana::GraphTopology::Copy(const GraphTopology& that) noexcept {
-  return std::move(katana::GraphTopology(
+  return katana::GraphTopology(
       that.adj_indices_.data(), that.adj_indices_.size(), that.dests_.data(),
-      that.dests_.size()));
+      that.dests_.size());
 }
 
 katana::Result<std::unique_ptr<katana::PropertyGraph>>
@@ -759,7 +759,6 @@ katana::PropertyGraph::InformPath(const std::string& input_path) {
 
 katana::Result<std::unique_ptr<katana::LargeArray<uint64_t>>>
 katana::SortAllEdgesByDest(katana::PropertyGraph* pg) {
-
   // TODO(amber): This function will soon change so that it produces a new sorted
   // topology instead of modifying an existing one. The const_cast will go away
   auto& topo = const_cast<GraphTopology&>(pg->topology());

@@ -29,7 +29,7 @@ ProjectAsArrowArray(const T* buf, const size_t len) noexcept {
   return std::make_shared<ArrowArrayType>(len, arrow::Buffer::Wrap(buf, len));
 }
 
-/// Provides write access to private data of GraphTopology. 
+/// Provides write access to private data of GraphTopology.
 /// WARNING: Dangerous
 class KATANA_EXPORT GraphTopologyAccess;
 
@@ -143,7 +143,6 @@ public:
 
   bool empty() const { return num_nodes() == 0; }
 
-
 private:
   friend class GraphTopologyAccess;
 
@@ -152,25 +151,17 @@ private:
 
   LargeArray<Edge> adj_indices_;
   LargeArray<Node> dests_;
-
 };
 
 class GraphTopologyAccess {
 public:
-
-  GraphTopologyAccess(GraphTopology* topo) noexcept:
-    topo_(topo)
-  {
+  GraphTopologyAccess(GraphTopology* topo) noexcept : topo_(topo) {
     KATANA_LOG_DEBUG_ASSERT(topo);
   }
 
-  GraphTopology::Edge* adj_data() noexcept {
-    return topo_->adj_data();
-  }
+  GraphTopology::Edge* adj_data() noexcept { return topo_->adj_data(); }
 
-  GraphTopology::Node* dest_data() noexcept {
-    return topo_->dest_data();
-  }
+  GraphTopology::Node* dest_data() noexcept { return topo_->dest_data(); }
 
   size_t adj_size() const noexcept { return topo_->adj_indices_.size(); }
   size_t dest_size() const noexcept { return topo_->dests_.size(); }

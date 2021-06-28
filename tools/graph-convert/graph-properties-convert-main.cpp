@@ -190,8 +190,7 @@ ParseMongoDB() {
     katana::GenerateMappingMongoDB(input_filename, output_directory);
   } else {
     if (auto r = katana::WritePropertyGraph(
-            std::move(
-                katana::ConvertMongoDB(input_filename, mapping, chunk_size)),
+            katana::ConvertMongoDB(input_filename, mapping, chunk_size),
             output_directory);
         !r) {
       KATANA_LOG_FATAL("Failed to write property graph: {}", r.error());
