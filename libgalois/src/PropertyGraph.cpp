@@ -331,7 +331,7 @@ katana::GraphTopology::GraphTopology(
   katana::ParallelSTL::copy(&dests[0], &dests[num_edges], dests_.begin());
 }
 
-katana::GraphTopology&&
+katana::GraphTopology
 katana::GraphTopology::Copy(const GraphTopology& that) noexcept {
   return std::move(katana::GraphTopology(
       that.adj_indices_.data(), that.adj_indices_.size(), that.dests_.data(),

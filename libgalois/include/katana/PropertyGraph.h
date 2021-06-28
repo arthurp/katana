@@ -60,7 +60,7 @@ public:
   // out_indices(LargeToArrowArray(adj_indices_)),
   // out_dests(LargeToArrowArray(dests_)) {}
 
-  static GraphTopology&& Copy(const GraphTopology& that) noexcept;
+  static GraphTopology Copy(const GraphTopology& that) noexcept;
 
   GraphTopology(GraphTopology&& that)
       : adj_indices_(std::move(that.adj_indices_)),
