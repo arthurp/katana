@@ -140,6 +140,8 @@ cdef class PropertyGraphBase:
         Can be called from numba compiled code.
         """
         cdef uint64_t prev
+        #TODO(amber): need to dereference GraphTopology::edge_begin()/edge_end()
+        # here
         if n > self.num_nodes():
             raise IndexError(n)
         if n == 0:
@@ -156,7 +158,7 @@ cdef class PropertyGraphBase:
         """
         if e > self.num_edges():
             raise IndexError(e)
-        return self.topology().out_dests.get().Value(e)
+        return self.topology().edge_dest(e)
 
     def get_node_property(self, prop):
         """
